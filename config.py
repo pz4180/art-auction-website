@@ -1,5 +1,6 @@
 import os
 from datetime import timedelta
+from decimal import Decimal
 
 class Config:
     """Configuration settings for the Art Auction Website"""
@@ -29,7 +30,7 @@ class Config:
     
     # Auction settings
     DEFAULT_AUCTION_DURATION_DAYS = 7
-    MINIMUM_BID_INCREMENT = 5.00  # Minimum amount to outbid current highest bid
+    MINIMUM_BID_INCREMENT = Decimal('1.00')  # Minimum amount to outbid current highest bid
     
     # Email settings (for notifications)
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
