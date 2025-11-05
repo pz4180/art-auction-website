@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}{{ auction.title }} - Art Auction Platform{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="ms-auto">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('browse_auctions') }}">Browse</a></li>
+        <li class="breadcrumb-item active text-truncate" style="max-width: 200px;">{{ auction.title }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Artwork Image -->
+    <div class="col-lg-7 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <img src="{{ url_for('static', filename='uploads/' + auction.image_path) }}" 
+                     class="auction-detail-image" 
+                     alt="{{ auction.title }}"
+                     onerror="this.src='https://via.placeholder.com/800x600?text=No+Image'">
+                
+                <!-- Artwork Details -->
+                <div class="mt-4">
+                    <h3 style="color: var(--primary-color);">{{ auction.title }}</h3>
+                    
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="me-3">
+                            <i class="bi bi-person"></i> 
+                            <strong>Seller:</strong> {{ auction.seller_name }}
+                        </span>
+                        {% if auction.category_name %}
+                        <span class="me-3">
+                            <i class="bi bi-tag"></i> 
+                            <strong>Category:</strong> {{ auction.category_name }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="description-section">
+                        <h5>Description</h5>
+                        <p>{{ auction.description|safe }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bid History -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Bid History</h5>
+            </div>
+            <div class="card-body">
+                {% if auction.bid_history %}
+                <div class="bid-history">
+                    {% for bid in auction.bid_history %}
+                    <div class="bid-item {% if loop.first %}winning-bid{% endif %}">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <strong>{{ bid.bidder_name }}</strong>
+                                {% if loop.first %}
+                                <span class="badge bg-success ms-2">Highest Bid</span>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <strong>{{ bid.bid_amount|currency }}</strong>
+                            </div>
+                        </div>
+                        <small class="text-muted">{{ bid.bid_time|timeago }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-center text-muted">No bids yet. Be the first to bid!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bidding Section -->
+    <div class="col-lg-5">
+        <!-- Auction Status Card -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <!-- Timer -->
+                {% if not auction.has_ended %}
+                <div class="countdown-timer" id="countdown">
+                    <i class="bi bi-clock"></i> 
+                    <span id="timeRemaining">{{ auction.time_remaining|countdown }}</span>
+                </div>
+                {% else %}
+                <div class="alert alert-warning text-center">
+                    <i class="bi bi-hourglass-bottom"></i> This auction has ended
+                </div>
+                {% endif %}
+                
+                <!-- Current Price -->
+                <div class="text-center my-4">
+                    <p class="text-muted mb-1">Current Bid</p>
+                    <h2 class="current-bid">{{ auction.current_bid|currency }}</h2>
+                    <small class="text-muted">
+                        <i class="bi bi-people"></i> {{ auction.bid_count or 0 }} bid(s)
+                    </small>
+                </div>
+                
+                <!-- Bid Form -->
+                {% if current_user.is_authenticated %}
+                    {% if not auction.has_ended %}
+                        {% if current_user.id != auction.seller_id %}
+                        <div class="bid-form">
+                            <h5 class="mb-3">Place Your Bid</h5>
+                            
+                            {% if auction.user_is_winning %}
+                            <div class="alert alert-success">
+                                <i class="bi bi-trophy"></i> You are currently winning this auction!
+                            </div>
+                            {% endif %}
+                            
+                            <form method="POST" action="{{ url_for('place_bid', auction_id=auction.auction_id) }}">
+                                <div class="mb-3">
+                                    <label for="bid_amount" class="form-label">Your Bid Amount</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="bid_amount" name="bid_amount" 
+                                               placeholder="{{ (auction.current_bid + 5)|round(2) }}"
+                                               min="{{ (auction.current_bid + 5)|round(2) }}" 
+                                               step="0.01" required>
+                                    </div>
+                                    <small class="text-muted">
+                                        Minimum bid: {{ (auction.current_bid + 5)|currency }}
+                                    </small>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary w-100 btn-lg">
+                                    <i class="bi bi-hammer"></i> Place Bid
+                                </button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> You cannot bid on your own auction
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <!-- Auction Ended -->
+                        {% if auction.winner_id %}
+                            {% if current_user.id == auction.winner_id %}
+                            <div class="alert alert-success text-center">
+                                <h5><i class="bi bi-trophy-fill"></i> Congratulations!</h5>
+                                <p>You won this auction!</p>
+                                <p class="mb-0">Winning bid: {{ auction.current_bid|currency }}</p>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-secondary text-center">
+                                <p>Auction won by <strong>{{ auction.winner_name }}</strong></p>
+                                <p class="mb-0">Final price: {{ auction.current_bid|currency }}</p>
+                            </div>
+                            {% endif %}
+                        {% else %}
+                        <div class="alert alert-info text-center">
+                            <p>Auction ended with no bids</p>
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                {% else %}
+                <div class="text-center">
+                    <p class="mb-3">Sign in to place a bid</p>
+                    <a href="{{ url_for('login', next=request.url) }}" class="btn btn-primary">
+                        <i class="bi bi-box-arrow-in-right"></i> Sign In
+                    </a>
+                </div>
+                {% endif %}
+                
+                <!-- Auction Info -->
+                <hr class="my-4">
+                <div class="auction-info-details">
+                    <p><strong>Starting Bid:</strong> {{ auction.starting_bid|currency }}</p>
+                    <p><strong>Started:</strong> {{ auction.start_time.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                    <p><strong>Ends:</strong> {{ auction.end_time.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                    <p><strong>Auction ID:</strong> #{{ auction.auction_id }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Share Section -->
+        <div class="card">
+            <div class="card-body">
+                <h6>Share this auction</h6>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary btn-sm" onclick="shareOnSocial('facebook')">
+                        <i class="bi bi-facebook"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="shareOnSocial('twitter')">
+                        <i class="bi bi-twitter"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="copyLink()">
+                        <i class="bi bi-link-45deg"></i> Copy Link
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Countdown timer
+{% if not auction.has_ended %}
+function updateCountdown() {
+    const endTime = new Date("{{ auction.end_time.isoformat() }}").getTime();
+    const now = new Date().getTime();
+    const timeLeft = endTime - now;
+    
+    if (timeLeft > 0) {
+        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+        
+        let timeString = "";
+        if (days > 0) timeString += days + " day" + (days > 1 ? "s " : " ");
+        if (hours > 0) timeString += hours + " hour" + (hours > 1 ? "s " : " ");
+        if (days === 0 && minutes > 0) timeString += minutes + " min" + (minutes > 1 ? "s " : " ");
+        if (days === 0 && hours === 0) timeString += seconds + " sec" + (seconds > 1 ? "s" : "");
+        
+        document.getElementById('timeRemaining').textContent = timeString + " left";
+        
+        // Add urgency styling if less than 1 hour
+        if (timeLeft < 3600000) {
+            document.getElementById('countdown').style.background = '#fee';
+            document.getElementById('countdown').style.color = '#d32f2f';
+        }
+    } else {
+        document.getElementById('countdown').innerHTML = '<i class="bi bi-hourglass-bottom"></i> Auction ended';
+        location.reload(); // Reload to show final state
+    }
+}
+
+setInterval(updateCountdown, 1000);
+updateCountdown();
+{% endif %}
+
+// Share functions
+function shareOnSocial(platform) {
+    const url = window.location.href;
+    const title = "{{ auction.title }}";
+    
+    if (platform === 'facebook') {
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`);
+    } else if (platform === 'twitter') {
+        window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=Check out this auction: ${title}`);
+    }
+}
+
+function copyLink() {
+    navigator.clipboard.writeText(window.location.href);
+    alert('Link copied to clipboard!');
+}
+</script>
+{% endblock %}

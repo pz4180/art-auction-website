@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Create Auction - Art Auction Platform{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="ms-auto">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+        <li class="breadcrumb-item active">Create Auction</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="bi bi-plus-circle"></i> Create New Auction</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('create_auction') }}" enctype="multipart/form-data" id="createAuctionForm">
+                    
+                    <!-- Artwork Details -->
+                    <h5 class="mb-3" style="color: var(--primary-color);">Artwork Details</h5>
+                    
+                    <div class="mb-3">
+                        <label for="title" class="form-label">
+                            <i class="bi bi-palette"></i> Artwork Title *
+                        </label>
+                        <input type="text" class="form-control" id="title" name="title" 
+                               placeholder="Enter artwork title" required maxlength="200">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">
+                            <i class="bi bi-card-text"></i> Description *
+                        </label>
+                        <textarea class="form-control" id="description" name="description" rows="4" 
+                                  placeholder="Describe your artwork, its history, inspiration, and unique features..." 
+                                  required></textarea>
+                        <small class="text-muted">Be descriptive - good descriptions attract more bidders!</small>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="category_id" class="form-label">
+                                <i class="bi bi-tag"></i> Category
+                            </label>
+                            <select class="form-select" id="category_id" name="category_id">
+                                <option value="">Select a category</option>
+                                {% for category in categories %}
+                                <option value="{{ category.category_id }}">{{ category.category_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="artwork_image" class="form-label">
+                                <i class="bi bi-image"></i> Artwork Image *
+                            </label>
+                            <input type="file" class="form-control" id="artwork_image" name="artwork_image" 
+                                   accept="image/*" required onchange="previewImage(this)">
+                            <small class="text-muted">Max size: 16MB. Formats: JPG, PNG, GIF, WEBP</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Image Preview -->
+                    <div class="image-upload-preview" id="imagePreview">
+                        <img id="previewImg" src="" alt="Preview">
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- Auction Settings -->
+                    <h5 class="mb-3" style="color: var(--primary-color);">Auction Settings</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="starting_bid" class="form-label">
+                                <i class="bi bi-currency-dollar"></i> Starting Bid *
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="starting_bid" name="starting_bid" 
+                                       placeholder="0.00" required min="1" step="0.01">
+                            </div>
+                            <small class="text-muted">Minimum bid amount to start the auction</small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="duration_days" class="form-label">
+                                <i class="bi bi-calendar-event"></i> Auction Duration
+                            </label>
+                            <select class="form-select" id="duration_days" name="duration_days">
+                                <option value="3">3 Days</option>
+                                <option value="5">5 Days</option>
+                                <option value="7" selected>7 Days (Recommended)</option>
+                                <option value="10">10 Days</option>
+                                <option value="14">14 Days</option>
+                            </select>
+                            <small class="text-muted">How long the auction will run</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Auction Preview Info -->
+                    <div class="alert alert-info mt-3">
+                        <i class="bi bi-info-circle"></i> 
+                        <strong>Before you submit:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Make sure your artwork image is clear and well-lit</li>
+                            <li>Provide detailed description to attract more bidders</li>
+                            <li>Set a reasonable starting bid based on artwork value</li>
+                            <li>Once created, auction cannot be edited or cancelled</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Submit Buttons -->
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-hammer"></i> Create Auction
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function previewImage(input) {
+    const preview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+    
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            preview.style.display = 'block';
+        }
+        
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        preview.style.display = 'none';
+    }
+}
+
+// Form validation
+document.getElementById('createAuctionForm').addEventListener('submit', function(e) {
+    const startingBid = parseFloat(document.getElementById('starting_bid').value);
+    
+    if (startingBid < 1) {
+        e.preventDefault();
+        alert('Starting bid must be at least $1.00');
+        return false;
+    }
+    
+    const fileInput = document.getElementById('artwork_image');
+    const file = fileInput.files[0];
+    
+    if (file && file.size > 16 * 1024 * 1024) {
+        e.preventDefault();
+        alert('File size must be less than 16MB');
+        return false;
+    }
+});
+</script>
+{% endblock %}

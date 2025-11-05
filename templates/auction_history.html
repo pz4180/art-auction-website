@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}Auction History - Art Auction Platform{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="ms-auto">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+        <li class="breadcrumb-item active">History</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2><i class="bi bi-clock-history"></i> Auction History</h2>
+    <p class="text-muted">View your complete auction activity history</p>
+</div>
+
+<!-- Navigation Tabs -->
+<ul class="nav nav-tabs mb-4" id="historyTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="my-auctions-tab" data-bs-toggle="tab" 
+                data-bs-target="#my-auctions" type="button">
+            <i class="bi bi-palette"></i> My Auctions ({{ my_past_auctions|length }})
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="bid-history-tab" data-bs-toggle="tab" 
+                data-bs-target="#bid-history" type="button">
+            <i class="bi bi-hammer"></i> Bid History ({{ my_bid_history|length }})
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="won-auctions-tab" data-bs-toggle="tab" 
+                data-bs-target="#won-auctions" type="button">
+            <i class="bi bi-trophy"></i> Won Auctions ({{ won_auctions|length }})
+        </button>
+    </li>
+</ul>
+
+<!-- Tab Content -->
+<div class="tab-content" id="historyTabContent">
+    
+    <!-- My Auctions Tab -->
+    <div class="tab-pane fade show active" id="my-auctions" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Auctions I've Created</h5>
+            </div>
+            <div class="card-body">
+                {% if my_past_auctions %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Start Price</th>
+                                <th>Final Price</th>
+                                <th>Bids</th>
+                                <th>Status</th>
+                                <th>Winner</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for auction in my_past_auctions %}
+                            <tr>
+                                <td>
+                                    <img src="{{ url_for('static', filename='uploads/' + auction.image_path) }}" 
+                                         style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;"
+                                         alt="{{ auction.title }}"
+                                         onerror="this.src='https://via.placeholder.com/50x50?text=No+Image'">
+                                </td>
+                                <td class="text-truncate" style="max-width: 150px;">{{ auction.title }}</td>
+                                <td>{{ auction.category_name or 'N/A' }}</td>
+                                <td>{{ auction.starting_bid|currency }}</td>
+                                <td><strong>{{ auction.final_bid|currency }}</strong></td>
+                                <td>{{ auction.bid_count or 0 }}</td>
+                                <td>
+                                    {% if auction.status == 'active' %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% elif auction.status == 'completed' %}
+                                    <span class="badge bg-secondary">Completed</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">{{ auction.status|capitalize }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ auction.winner_name or '-' }}</td>
+                                <td><small>{{ auction.created_at|timeago }}</small></td>
+                                <td>
+                                    <a href="{{ url_for('auction_detail', auction_id=auction.auction_id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center text-muted py-5">You haven't created any auctions yet</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bid History Tab -->
+    <div class="tab-pane fade" id="bid-history" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">My Bidding History</h5>
+            </div>
+            <div class="card-body">
+                {% if my_bid_history %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Auction Title</th>
+                                <th>My Bid</th>
+                                <th>Current/Final Bid</th>
+                                <th>Status</th>
+                                <th>Bid Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for bid in my_bid_history %}
+                            <tr>
+                                <td>
+                                    <img src="{{ url_for('static', filename='uploads/' + bid.image_path) }}" 
+                                         style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;"
+                                         alt="{{ bid.title }}"
+                                         onerror="this.src='https://via.placeholder.com/50x50?text=No+Image'">
+                                </td>
+                                <td class="text-truncate" style="max-width: 200px;">{{ bid.title }}</td>
+                                <td>{{ bid.bid_amount|currency }}</td>
+                                <td>
+                                    <strong>{{ bid.current_highest_bid|currency }}</strong>
+                                </td>
+                                <td>
+                                    {% if bid.status == 'active' %}
+                                        {% if bid.is_winning %}
+                                        <span class="badge bg-success">Winning</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">Outbid</span>
+                                        {% endif %}
+                                    {% elif bid.status == 'completed' %}
+                                        {% if bid.is_winning %}
+                                        <span class="badge bg-primary">Won</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Lost</span>
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                                <td><small>{{ bid.bid_time|timeago }}</small></td>
+                                <td>
+                                    <a href="{{ url_for('auction_detail', auction_id=bid.auction_id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center text-muted py-5">You haven't placed any bids yet</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Won Auctions Tab -->
+    <div class="tab-pane fade" id="won-auctions" role="tabpanel">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-trophy-fill"></i> Auctions I've Won</h5>
+            </div>
+            <div class="card-body">
+                {% if won_auctions %}
+                <div class="row">
+                    {% for auction in won_auctions %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100">
+                            <img src="{{ url_for('static', filename='uploads/' + auction.image_path) }}" 
+                                 class="card-img-top" style="height: 200px; object-fit: cover;"
+                                 alt="{{ auction.title }}"
+                                 onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
+                            <div class="card-body">
+                                <h6 class="card-title">{{ auction.title }}</h6>
+                                <p class="text-muted small">
+                                    <i class="bi bi-person"></i> From: {{ auction.seller_name }}
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <p class="mb-0">Won for:</p>
+                                        <h5 class="text-success">{{ auction.current_bid|currency }}</h5>
+                                    </div>
+                                    <div class="text-end">
+                                        <small class="text-muted">
+                                            {{ auction.end_time.strftime('%b %d, %Y') }}
+                                        </small>
+                                    </div>
+                                </div>
+                                <hr>
+                                <a href="{{ url_for('auction_detail', auction_id=auction.auction_id) }}" 
+                                   class="btn btn-sm btn-outline-primary w-100">
+                                    <i class="bi bi-eye"></i> View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-trophy h1 text-muted"></i>
+                    <p class="text-muted mt-3">You haven't won any auctions yet</p>
+                    <p>Keep bidding to win your first artwork!</p>
+                    <a href="{{ url_for('browse_auctions') }}" class="btn btn-primary">
+                        <i class="bi bi-search"></i> Browse Active Auctions
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Statistics -->
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 style="color: var(--primary-color);">{{ my_past_auctions|length }}</h3>
+                <p class="text-muted">Total Auctions Created</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 style="color: var(--secondary-color);">{{ my_bid_history|length }}</h3>
+                <p class="text-muted">Total Bids Placed</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 style="color: var(--support-color);">{{ won_auctions|length }}</h3>
+                <p class="text-muted">Auctions Won</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                {% set total_spent = won_auctions|map(attribute='current_bid')|sum %}
+                <h3 style="color: var(--neutral-color);">{{ total_spent|currency }}</h3>
+                <p class="text-muted">Total Spent</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

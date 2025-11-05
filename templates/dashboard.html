@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Art Auction Platform{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2>Welcome back, {{ current_user.username }}!</h2>
+    <p class="text-muted">Manage your auctions, bids, and account from your personal dashboard</p>
+</div>
+
+<!-- Dashboard Stats -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="dashboard-stat">
+            <h3>{{ my_auctions|length }}</h3>
+            <p><i class="bi bi-palette"></i> My Auctions</p>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="dashboard-stat">
+            <h3>{{ my_bids|length }}</h3>
+            <p><i class="bi bi-hammer"></i> Active Bids</p>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="dashboard-stat">
+            <h3>{{ won_auctions|length }}</h3>
+            <p><i class="bi bi-trophy"></i> Won Auctions</p>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="dashboard-stat">
+            <h3>{{ notifications|length }}</h3>
+            <p><i class="bi bi-bell"></i> Notifications</p>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Quick Actions</h5>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{{ url_for('create_auction') }}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Create Auction
+                    </a>
+                    <a href="{{ url_for('browse_auctions') }}" class="btn btn-secondary">
+                        <i class="bi bi-search"></i> Browse Auctions
+                    </a>
+                    <a href="{{ url_for('auction_history') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-clock-history"></i> View History
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- My Active Auctions -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-palette"></i> My Active Auctions</h5>
+            </div>
+            <div class="card-body">
+                {% if my_auctions %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Current Bid</th>
+                                <th>Bids</th>
+                                <th>Ends</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for auction in my_auctions[:5] %}
+                            {% if auction.status == 'active' %}
+                            <tr onclick="window.location.href='{{ url_for('auction_detail', auction_id=auction.auction_id) }}'" style="cursor: pointer;">
+                                <td class="text-truncate" style="max-width: 150px;">{{ auction.title }}</td>
+                                <td>{{ auction.final_bid|currency }}</td>
+                                <td>{{ auction.bid_count or 0 }}</td>
+                                <td><small>{{ auction.end_time|countdown }}</small></td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center text-muted py-3">You haven't created any auctions yet</p>
+                <div class="text-center">
+                    <a href="{{ url_for('create_auction') }}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Create Your First Auction
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- My Active Bids -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-hammer"></i> My Active Bids</h5>
+            </div>
+            <div class="card-body">
+                {% if my_bids %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Auction</th>
+                                <th>My Bid</th>
+                                <th>Current</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for bid in my_bids[:5] %}
+                            {% if bid.status == 'active' %}
+                            <tr onclick="window.location.href='{{ url_for('auction_detail', auction_id=bid.auction_id) }}'" style="cursor: pointer;">
+                                <td class="text-truncate" style="max-width: 150px;">{{ bid.title }}</td>
+                                <td>{{ bid.bid_amount|currency }}</td>
+                                <td>{{ bid.current_highest_bid|currency }}</td>
+                                <td>
+                                    {% if bid.is_winning %}
+                                    <span class="badge bg-success">Winning</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">Outbid</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center text-muted py-3">You haven't placed any bids yet</p>
+                <div class="text-center">
+                    <a href="{{ url_for('browse_auctions') }}" class="btn btn-primary">
+                        <i class="bi bi-search"></i> Browse Auctions
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Notifications -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-bell"></i> Recent Notifications</h5>
+            </div>
+            <div class="card-body">
+                {% if notifications %}
+                <div class="list-group">
+                    {% for notif in notifications[:10] %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <div>
+                                <i class="bi bi-{{ 'exclamation-circle text-warning' if notif.type == 'outbid' else 'trophy text-success' if notif.type == 'won' else 'info-circle text-info' }}"></i>
+                                {{ notif.message }}
+                            </div>
+                            <small class="text-muted">{{ notif.created_at|timeago }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-center text-muted py-3">No new notifications</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Won Auctions -->
+{% if won_auctions %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-trophy"></i> Recently Won Auctions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for auction in won_auctions[:3] %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card">
+                            <img src="{{ url_for('static', filename='uploads/' + auction.image_path) }}" 
+                                 class="card-img-top" style="height: 150px; object-fit: cover;"
+                                 alt="{{ auction.title }}"
+                                 onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
+                            <div class="card-body">
+                                <h6 class="card-title text-truncate">{{ auction.title }}</h6>
+                                <p class="mb-1">Won for: <strong>{{ auction.current_bid|currency }}</strong></p>
+                                <p class="text-muted small">From: {{ auction.seller_name }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
