@@ -134,8 +134,9 @@ class DatabaseManager:
                 cursor.close()
                 conn.close()
     
-    def get_active_auctions(self, category_id=None, min_price=None, max_price=None, 
-                           search_term=None, limit=20, offset=0):
+    def get_active_auctions(self, category_id=None, min_price=None, max_price=None,
+                        search_term=None, limit=20, offset=0,
+                        sort_by="end_time", order="ASC"):
         """Get list of active auctions with filters"""
         conn = self.get_connection()
         if not conn:
@@ -172,9 +173,9 @@ class DatabaseManager:
                 search_pattern = f"%{search_term}%"
                 params.extend([search_pattern, search_pattern])
             
-            query += " GROUP BY a.auction_id ORDER BY a.end_time ASC LIMIT %s OFFSET %s"
+            query += f" GROUP BY a.auction_id ORDER BY {sort_by} {order} LIMIT %s OFFSET %s"
             params.extend([limit, offset])
-            
+  
             cursor.execute(query, params)
             return cursor.fetchall()
         

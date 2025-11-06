@@ -73,11 +73,11 @@
                     <div class="mb-4">
                         <label for="sort" class="form-label">Sort By</label>
                         <select class="form-select" id="sort" name="sort">
-                            <option value="ending_soon">Ending Soon</option>
-                            <option value="newly_listed">Newly Listed</option>
-                            <option value="price_low">Price: Low to High</option>
-                            <option value="price_high">Price: High to Low</option>
-                            <option value="most_bids">Most Bids</option>
+                            <option value="ending_soon" {% if sort == 'ending_soon' %}selected{% endif %}>Ending Soon</option>
+                            <option value="newly_listed" {% if sort == 'newly_listed' %}selected{% endif %}>Newly Listed</option>
+                            <option value="price_low" {% if sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                            <option value="price_high" {% if sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                            <option value="most_bids" {% if sort == 'most_bids' %}selected{% endif %}>Most Bids</option>
                         </select>
                     </div>
                     

@@ -224,12 +224,32 @@ def browse_auctions():
     min_price = request.args.get('min_price', type=float)
     max_price = request.args.get('max_price', type=float)
     search_term = request.args.get('search', '')
+    sort = request.args.get('sort', 'ending_soon')  
     page = request.args.get('page', 1, type=int)
     
     # Pagination
     per_page = 12
     offset = (page - 1) * per_page
     
+    sort_by = None
+    order = "ASC"
+
+    if sort == "ending_soon":
+        sort_by = "end_time"
+        order = "ASC"
+    elif sort == "newly_listed":
+        sort_by = "created_at"
+        order = "DESC"
+    elif sort == "price_low":
+        sort_by = "current_bid"
+        order = "ASC"
+    elif sort == "price_high":
+        sort_by = "current_bid"
+        order = "DESC"
+    elif sort == "most_bids":
+        sort_by = "bid_count"
+        order = "DESC"
+
     # Get auctions
     auctions = db_manager.get_active_auctions(
         category_id=category_id,
@@ -237,20 +257,25 @@ def browse_auctions():
         max_price=max_price,
         search_term=search_term if search_term else None,
         limit=per_page,
-        offset=offset
+        offset=offset,
+        sort_by=sort_by,
+        order=order
     )
     
     # Get categories for filter
     categories = db_manager.get_categories()
     
-    return render_template('browse_auctions.html', 
-                         auctions=auctions,
-                         categories=categories,
-                         current_category=category_id,
-                         search_term=search_term,
-                         min_price=min_price,
-                         max_price=max_price,
-                         page=page)
+    return render_template(
+        'browse_auctions.html',
+        auctions=auctions,
+        categories=categories,
+        current_category=category_id,
+        search_term=search_term,
+        min_price=min_price,
+        max_price=max_price,
+        page=page,
+        sort=sort  # ✅ Pass it back to template
+    )
 
 @app.route('/auction/<int:auction_id>')
 def auction_detail(auction_id):

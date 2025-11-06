@@ -294,5 +294,7 @@ For issues or questions about the implementation, please refer to the inline cod
 This project is provided as-is for educational and commercial purposes.
 
 ---
+venv\Scripts\activate
+python app.py
+ngrok http 5000
 
-**Note:** Remember to change the SECRET_KEY in config.py before deploying to production!

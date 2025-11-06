@@ -9,14 +9,15 @@
 */
 
 :root {
-    --primary-color: #7E3B21;
-    --secondary-color: #D99D76;
+    --primary-color: #;
+    --secondary-color: #;
     --accent-color: #EBCCA0;
     --support-color: #848154;
     --neutral-color: #C29E7B;
     --dark-color: #785D54;
     --light-color: #F8F6F3;
     --white: #FFFFFF;
+    --black: #000000;
     --gray: #6c757d;
 }
 
@@ -27,7 +28,7 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Times New Roman', Times, serif, sans-serif;
     background-color: var(--light-color);
     color: #333;
     padding-top: 76px;
@@ -38,15 +39,15 @@ body {
 
 /* Navigation */
 .navbar {
-    background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    background: linear-gradient(135deg, var(--light-color));
+    box-shadow: 0 2px 10px rgba(255, 255, 255, 0.1);
     padding: 1rem 0;
 }
 
 .navbar-brand {
     font-size: 1.5rem;
     font-weight: bold;
-    color: var(--accent-color) !important;
+    color: var(--black) !important;
     transition: transform 0.3s;
 }
 
@@ -55,14 +56,14 @@ body {
 }
 
 .navbar-nav .nav-link {
-    color: var(--accent-color) !important;
+    color: var(--black) !important;
     margin: 0 0.5rem;
     transition: all 0.3s;
     position: relative;
 }
 
 .navbar-nav .nav-link:hover {
-    color: var(--white) !important;
+    color: var(--accent-color) !important;
 }
 
 .navbar-nav .nav-link::after {
@@ -72,7 +73,7 @@ body {
     left: 50%;
     width: 0;
     height: 2px;
-    background: var(--secondary-color);
+    background: var(--white);
     transition: all 0.3s;
     transform: translateX(-50%);
 }
@@ -89,12 +90,12 @@ body {
 }
 
 .breadcrumb-item a {
-    color: var(--accent-color);
+    color: var(--black);
     text-decoration: none;
 }
 
 .breadcrumb-item.active {
-    color: var(--white);
+    color: var(--accent-color);
 }
 
 /* Notification Badge */
@@ -102,8 +103,8 @@ body {
     position: absolute;
     top: 0;
     right: 0;
-    background: var(--secondary-color);
-    color: var(--white);
+    background: var(--white);
+    color: var(--black);
     border-radius: 50%;
     padding: 2px 6px;
     font-size: 0.7rem;
@@ -132,7 +133,7 @@ body {
 }
 
 .card-header {
-    background: linear-gradient(135deg, var(--secondary-color), var(--neutral-color));
+    background: linear-gradient(135deg), var(--neutral-color);
     color: var(--white);
     font-weight: bold;
     border: none;
@@ -145,7 +146,7 @@ body {
 }
 
 .auction-card .card-img-top {
-    height: 250px;
+    height: 300px;
     object-fit: cover;
     transition: transform 0.3s;
 }
@@ -158,8 +159,8 @@ body {
     position: absolute;
     top: 10px;
     right: 10px;
-    background: var(--primary-color);
-    color: var(--white);
+    background: var(--white);
+    color: var(--black);
     padding: 5px 10px;
     border-radius: 20px;
 }
@@ -171,12 +172,12 @@ body {
 .current-bid {
     font-size: 1.5rem;
     font-weight: bold;
-    color: var(--primary-color);
+    color: var(--black);
 }
 
 .time-remaining {
-    background: var(--accent-color);
-    color: var(--dark-color);
+    background: var(--white);
+    color: var(--black);
     padding: 5px 10px;
     border-radius: 15px;
     font-size: 0.9rem;
@@ -192,21 +193,20 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+    background: linear-gradient(135deg, var(--secondary-color));
     border: none;
-    color: var(--white);
+    color: var(--black);
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, var(--dark-color), var(--primary-color));
+    background: linear-gradient(135deg, var(--secondary-color));
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(126, 59, 33, 0.3);
 }
 
 .btn-secondary {
     background: var(--secondary-color);
     border: none;
-    color: var(--white);
+    color: var(--black);
 }
 
 .btn-secondary:hover {
@@ -281,8 +281,7 @@ body {
 
 /* Dashboard */
 .dashboard-stat {
-    background: linear-gradient(135deg, var(--secondary-color), var(--neutral-color));
-    color: var(--white);
+    color: var(--black);
     padding: 1.5rem;
     border-radius: 10px;
     text-align: center;
@@ -310,7 +309,7 @@ body {
 
 .table thead {
     background: var(--primary-color);
-    color: var(--white);
+    color: var(--black);
 }
 
 .table-hover tbody tr:hover {
@@ -328,14 +327,13 @@ body {
     padding: 10px;
     border-left: 4px solid var(--secondary-color);
     margin-bottom: 10px;
-    background: var(--light-color);
+    background: #fff7e7;
     border-radius: 5px;
     transition: all 0.3s;
 }
 
 .bid-item:hover {
-    background: var(--accent-color);
-    transform: translateX(5px);
+    background: var(--light-color);
 }
 
 .winning-bid {
@@ -353,19 +351,19 @@ body {
 }
 
 .bid-form {
-    background: var(--accent-color);
+    color: var(--black);
+    background: var(--light-color);
     padding: 1.5rem;
     border-radius: 10px;
-    margin-top: 1rem;
 }
 
 .countdown-timer {
     font-size: 1.5rem;
     font-weight: bold;
-    color: var(--primary-color);
+    color: var(--black);
     text-align: center;
     padding: 1rem;
-    background: var(--accent-color);
+    background: var(--light-color);
     border-radius: 10px;
     margin-bottom: 1rem;
 }
@@ -373,18 +371,18 @@ body {
 /* Footer */
 .footer {
     background: linear-gradient(135deg, var(--dark-color), var(--primary-color));
-    color: var(--accent-color);
+    color: var(--black);
     margin-top: auto;
 }
 
 .footer a {
-    color: var(--accent-color);
+    color: var(--black);
     text-decoration: none;
     transition: color 0.3s;
 }
 
 .footer a:hover {
-    color: var(--white);
+    color: var(--accent-color);
 }
 
 .social-links a {
@@ -484,30 +482,35 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--accent-color);
+    background: var(--light-color);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--primary-color);
+    background: var(--gray);
     border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--dark-color);
+    background: var(--gray);
 }
 
-/* Image Upload Preview */
+/* Image Upload Preview */ 
 .image-upload-preview {
-    max-width: 300px;
-    max-height: 300px;
-    margin: 1rem auto;
+    max-width: 100%;
+    width: 100%;
+    margin: 1rem auto; /* center the container horizontally */
     display: none;
+    text-align: center; /* optional: centers inline/inline-block children */
 }
 
 .image-upload-preview img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    width: 400px;       /* fixed width for the image */
+    max-width: 100%;    /* prevents overflow on small screens */
+    height: auto;       /* maintain aspect ratio */
+    object-fit: contain;
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    display: block;
+    margin: 0 auto;     /* centers the image itself */
 }
+
