@@ -5,7 +5,10 @@
 {% block content %}
 <!-- Hero Section -->
 <div class="hero-section text-center py-5 mb-5 fade-in" style="background: linear-gradient(135deg, rgba(126,59,33,0.1), rgba(217,157,118,0.1)); border-radius: 15px;">
-    <h1 class="display-4 fw-bold" style="color: var(--primary-color);">Welcome to MuseBid</h1>
+    <h1 class="display-4 fw-bold" style="color: var(--primary-color);">
+        Welcome to MuseBid
+        <link rel="icon" href="data:,">
+    </h1>
     <p class="lead text-muted">Discover, Bid, and Own Extraordinary Artworks</p>
     <div class="mt-4">
         <a href="{{ url_for('browse_auctions') }}" class="btn btn-primary btn-lg me-3">
@@ -20,28 +23,6 @@
             <i class="bi bi-person-plus"></i> Join Now
         </a>
         {% endif %}
-    </div>
-</div>
-
-<!-- Stats Section -->
-<div class="row text-center mb-5">
-    <div class="col-md-4 mb-3">
-        <div class="dashboard-stat">
-            <h3>{{ auctions|length }}</h3>
-            <p>Active Auctions</p>
-        </div>
-    </div>
-    <div class="col-md-4 mb-3">
-        <div class="dashboard-stat">
-            <h3>500+</h3>
-            <p>Happy Collectors</p>
-        </div>
-    </div>
-    <div class="col-md-4 mb-3">
-        <div class="dashboard-stat">
-            <h3>1000+</h3>
-            <p>Artworks Sold</p>
-        </div>
     </div>
 </div>
 

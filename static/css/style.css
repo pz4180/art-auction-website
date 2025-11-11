@@ -19,6 +19,8 @@
     --white: #FFFFFF;
     --black: #000000;
     --gray: #6c757d;
+    --gold: #bba14f;
+    --metalgold: #d3af37;
 }
 
 * {
@@ -80,6 +82,19 @@ body {
 
 .navbar-nav .nav-link:hover::after {
     width: 80%;
+}
+
+.logo {
+    height: 36px;          
+    width: auto;
+    object-fit: contain;
+}
+
+.footer-logo {
+    height: 28px;       
+    width: auto;
+    object-fit: contain;
+    vertical-align: middle;
 }
 
 /* Breadcrumb */
@@ -412,6 +427,11 @@ body {
 .alert-danger {
     background: linear-gradient(135deg, #f44336, #da190b);
     color: white;
+}
+
+.text-danger {
+    color: #dc3545;
+    font-weight: 500;
 }
 
 .alert-warning {

@@ -63,6 +63,12 @@
                             <input type="file" class="form-control" id="artwork_image" name="artwork_image" 
                                    accept="image/*" required onchange="previewImage(this)">
                             <small class="text-muted">Max size: 16MB. Formats: JPG, PNG, GIF, WEBP</small>
+                            <div id="imageError" class="text-danger mt-1" style="font-size: 0.9em;"></div>
+                            {% if image_error %}
+                                <div class="text-danger mt-1" style="font-size: 0.9em;">
+                                    <i class="bi bi-exclamation-circle"></i> {{ image_error }}
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     
@@ -135,37 +141,74 @@
 function previewImage(input) {
     const preview = document.getElementById('imagePreview');
     const previewImg = document.getElementById('previewImg');
-    
+    const imageError = document.getElementById('imageError');
+    imageError.textContent = ''; // Clear previous error
+
     if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+        if (!validTypes.includes(file.type)) {
+            // Invalid file type — show message, stop preview
+            imageError.textContent = 'Unsupported image format. Please upload JPG, PNG, GIF, or WEBP.';
+            input.value = ''; // clear invalid file
+            preview.style.display = 'none';
+            previewImg.src = '';
+            return;
+        }
+
+        if (file.size > 16 * 1024 * 1024) {
+            imageError.textContent = 'File size must be less than 16MB.';
+            input.value = '';
+            preview.style.display = 'none';
+            previewImg.src = '';
+            return;
+        }
+
+        // Show image preview if valid
         const reader = new FileReader();
-        
         reader.onload = function(e) {
             previewImg.src = e.target.result;
             preview.style.display = 'block';
-        }
-        
-        reader.readAsDataURL(input.files[0]);
+        };
+        reader.readAsDataURL(file);
     } else {
         preview.style.display = 'none';
     }
 }
 
-// Form validation
+// Form validation for bid
 document.getElementById('createAuctionForm').addEventListener('submit', function(e) {
     const startingBid = parseFloat(document.getElementById('starting_bid').value);
-    
+    const fileInput = document.getElementById('artwork_image');
+    const imageError = document.getElementById('imageError');
+
+   imageError.textContent = '';
+
     if (startingBid < 1) {
         e.preventDefault();
         alert('Starting bid must be at least $1.00');
         return false;
     }
-    
-    const fileInput = document.getElementById('artwork_image');
+
     const file = fileInput.files[0];
-    
-    if (file && file.size > 16 * 1024 * 1024) {
+     if (!file) {
         e.preventDefault();
-        alert('File size must be less than 16MB');
+        imageError.textContent = 'Please select an image before submitting.';
+        return false;
+    }
+
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+    if (!validTypes.includes(file.type)) {
+        e.preventDefault();
+        imageError.textContent = 'Unsupported image format. Please upload JPG, PNG, GIF, or WEBP.';
+        return false;
+    }
+
+    if (file.size > 16 * 1024 * 1024) {
+        e.preventDefault();
+        imageError.textContent = 'File size must be less than 16MB.';
         return false;
     }
 });

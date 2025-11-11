@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Contact Us - MuseBid{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold">Contact <span class="text-primary">MuseBid</span></h1>
+        <p class="text-muted">We’d love to hear from you</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <h4 class="fw-semibold mb-3">Get In Touch</h4>
+            <p>
+                Have questions about an auction, need help with your account, or want to collaborate?
+                Our team is always ready to assist you.
+            </p>
+
+            <form method="post" action="{{ url_for('contact') }}" class="mt-4">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name *</label>
+                    <input type="text" class="form-control" id="name" name="name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email *</label>
+                    <input type="email" class="form-control" id="email" name="email" required>
+                </div>
+                <div class="mb-3">
+                    <label for="message" class="form-label">Message *</label>
+                    <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Send Message</button>
+            </form>
+
+            <div class="mt-5">
+                <h5 class="fw-semibold mb-2">Email Us</h5>
+                <p class="mb-1"><strong>General Inquiries:</strong> support@musebid.com</p>
+                <p class="mb-1"><strong>Partnerships:</strong> partnerships@musebid.com</p>
+                <p class="mb-3"><strong>Press & Media:</strong> media@musebid.com</p>
+
+                <h5 class="fw-semibold mb-2 mt-4">Support Hours</h5>
+                <p>Monday – Friday: 9:00 AM – 6:00 PM (EST)</p>
+                <p>Saturday – Sunday: Closed</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

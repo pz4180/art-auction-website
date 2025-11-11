@@ -385,6 +385,33 @@ class DatabaseManager:
                 cursor.close()
                 conn.close()
     
+    def get_highest_bid(self, auction_id):
+        """Get the highest bid for a given auction"""
+        conn = self.get_connection()
+        if not conn:
+            return None
+
+        try:
+            cursor = conn.cursor(dictionary=True)
+            query = """
+                SELECT b.bid_id, b.bidder_id, b.bid_amount, u.username as bidder_name
+                FROM bids b
+                JOIN users u ON b.bidder_id = u.user_id
+                WHERE b.auction_id = %s
+                ORDER BY b.bid_amount DESC
+                LIMIT 1
+            """
+            cursor.execute(query, (auction_id,))
+            result = cursor.fetchone()
+            return result
+        except Error as e:
+            print(f"Error getting highest bid: {e}")
+            return None
+        finally:
+            if conn.is_connected():
+                cursor.close()
+                conn.close()
+
     # Notification Functions
     def create_notification(self, user_id, message, notification_type='new_auction'):
         """Create a notification for a user"""
@@ -555,6 +582,86 @@ class DatabaseManager:
             if conn.is_connected():
                 cursor.close()
                 conn.close()
+
+    def update_auction_info(self, auction_id, title, description, category_id, duration_days):
+        try:
+            conn = self.get_connection()
+            cur = conn.cursor()
+            end_time = datetime.now() + timedelta(days=duration_days)
+            cur.execute("""
+                UPDATE auctions
+                SET title=%s, description=%s, category_id=%s, end_time=%s
+                WHERE auction_id=%s
+            """, (title, description, category_id, end_time, auction_id))
+            conn.commit()
+            cur.close()
+            conn.close()
+            return True
+        except Exception as e:
+            print("Error updating auction:", e)
+            return False
+
+
+    def delete_auction(self, auction_id):
+        try:
+            conn = self.get_connection()
+            cur = conn.cursor()
+            cur.execute("DELETE FROM auctions WHERE auction_id=%s", (auction_id,))
+            conn.commit()
+            cur.close()
+            conn.close()
+            return True
+        except Exception as e:
+            print("Error deleting auction:", e)
+            return False
+
+    
+    def sell_now(self, auction_id):
+        """End an auction immediately and sell to the highest bidder"""
+        conn = self.get_connection()
+        if not conn:
+            return False, "Database connection failed"
+
+        try:
+            cursor = conn.cursor(dictionary=True)
+
+            # Get highest bid
+            highest_bid = self.get_highest_bid(auction_id)
+            if not highest_bid:
+                return False, "No bids yet — cannot sell immediately."
+
+            bidder_id = highest_bid['bidder_id']
+            bid_amount = highest_bid['bid_amount']
+
+            # Update auction as sold
+            cursor.execute("""
+                UPDATE auctions
+                SET status = 'sold',
+                    sold_price = %s,
+                    winner_id = %s,
+                    end_time = NOW()
+                WHERE auction_id = %s
+            """, (bid_amount, bidder_id, auction_id))
+
+            # Create notification for buyer
+            message = f"Congratulations! You won auction #{auction_id} for RM{bid_amount:.2f}. Please complete your payment."
+            self.create_notification(bidder_id, message, 'won')
+
+            conn.commit()
+            return True, "Auction sold immediately to highest bidder."
+        
+        except Error as e:
+            print("❌ MySQL error in sell_now():", e)  # <-- add this
+            conn.rollback()
+            return False, f"MySQL error: {str(e)}"  # <-- change message to show real cause
+        finally:
+            if conn.is_connected():
+                cursor.close()
+                conn.close()
+
+
+
+
 
 # Create a singleton instance
 db_manager = DatabaseManager()

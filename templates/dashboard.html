@@ -215,4 +215,19 @@
     </div>
 </div>
 {% endif %}
+
+{% for auction in won_auctions %}
+<tr>
+  <td>{{ auction.title }}</td>
+  <td>RM{{ auction.sold_price }}</td>
+  <td>
+    {% if not auction.payment_status %}
+      <span class="badge bg-warning text-dark">Pending Payment</span>
+    {% else %}
+      <span class="badge bg-success">Paid</span>
+    {% endif %}
+  </td>
+</tr>
+{% endfor %}
+
 {% endblock %}

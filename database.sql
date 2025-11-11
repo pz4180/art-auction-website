@@ -98,3 +98,5 @@ LEFT JOIN categories c ON a.category_id = c.category_id
 LEFT JOIN bids b ON a.auction_id = b.auction_id
 WHERE a.status = 'active' AND a.end_time > NOW()
 GROUP BY a.auction_id;
+
+ALTER TABLE auctions ADD COLUMN sold_price DECIMAL(10,2) NULL AFTER current_bid;

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}About Us - MuseBid{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold">About MuseBid</h1>
+        <p class="text-muted">Where creativity meets opportunity</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h3 class="fw-semibold mb-3">Our Story</h3>
+            <p>
+                MuseBid was born from a simple idea — to make fine art accessible to everyone, not just galleries and elite collectors.
+                We believe every artist deserves a global stage, and every collector deserves a chance to discover something extraordinary.
+            </p>
+            <p>
+                Founded in 2025, MuseBid brings together artists, collectors, and enthusiasts through a seamless online auction experience.
+                Whether you’re showcasing your first painting or bidding on a masterpiece, our platform celebrates the story behind every work of art.
+            </p>
+
+            <h3 class="fw-semibold mt-5 mb-3">Our Mission</h3>
+            <p>
+                To empower artists and art lovers by building a transparent, inclusive, and inspiring auction space
+                where creativity thrives and value is shared.
+            </p>
+
+            <h3 class="fw-semibold mt-5 mb-3">Why “MuseBid”?</h3>
+            <p>
+                “Muse” represents inspiration. “Bid” represents opportunity. Together, MuseBid stands for the meeting point
+                of creativity and value — where imagination meets appreciation.
+            </p>
+
+            <div class="text-center mt-5">
+                <h5 class="fw-semibold mb-2">Join Us</h5>
+                <p>Whether you’re an artist, collector, or simply a lover of beauty — welcome to a world where every bid tells a story.</p>
+                <a href="{{ url_for('register') }}" class="btn btn-primary mt-3">Join MuseBid</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

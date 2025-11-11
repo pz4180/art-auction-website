@@ -5,6 +5,7 @@ from werkzeug.security import check_password_hash
 from datetime import datetime, timedelta
 import os
 import json
+import imghdr
 from PIL import Image
 from config import Config
 from db_operations import db_manager
@@ -43,30 +44,40 @@ def allowed_file(filename):
 # Helper function to resize and save images
 def save_artwork_image(file):
     if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        filename = f"{timestamp}_{filename}"
-        filepath = os.path.join(Config.UPLOAD_FOLDER, filename)
-        
-        # Save and optimize image
-        img = Image.open(file)
-        # Convert to RGB if necessary
-        if img.mode in ('RGBA', 'LA', 'P'):
-            rgb_img = Image.new('RGB', img.size, (255, 255, 255))
-            rgb_img.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
-            img = rgb_img
-        
-        # Resize if too large
-        max_size = (1200, 1200)
-        img.thumbnail(max_size, Image.Resampling.LANCZOS)
-        
-        # Save optimized image
-        img.save(filepath, 'JPEG', quality=85, optimize=True)
-        
-        return filename
+        try:
+            filename = secure_filename(file.filename)
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            filename = f"{timestamp}_{filename}"
+            filepath = os.path.join(Config.UPLOAD_FOLDER, filename)
+
+            img = Image.open(file)
+            if img.mode in ('RGBA', 'LA', 'P'):
+                rgb_img = Image.new('RGB', img.size, (255, 255, 255))
+                rgb_img.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+                img = rgb_img
+
+            max_size = (1200, 1200)
+            img.thumbnail(max_size, Image.Resampling.LANCZOS)
+            img.save(filepath, 'JPEG', quality=85, optimize=True)
+            return filename
+        except Exception:
+            return None
     return None
 
+
 # Routes
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+@app.route("/contact", methods=["GET", "POST"])
+def contact():
+    if request.method == "POST":
+        # You can handle form submissions here, e.g. send an email or save to DB
+        flash("Your message has been sent successfully!", "success")
+        return redirect(url_for("contact"))
+    return render_template("contact.html")
+
 
 @app.route('/')
 def index():
@@ -172,7 +183,8 @@ def dashboard():
 def create_auction():
     """Create new auction page"""
     categories = db_manager.get_categories()
-    
+    image_error = None  # <--- added
+
     if request.method == 'POST':
         title = request.form.get('title')
         description = request.form.get('description')
@@ -210,11 +222,115 @@ def create_auction():
                     else:
                         flash(f'Error creating auction: {result}', 'danger')
                 else:
-                    flash('Error uploading image', 'danger')
+                    flash('❌ Unsupported image format. Please upload a JPG, PNG, or GIF.', 'danger')
             else:
                 flash('Invalid file type. Please upload an image.', 'danger')
     
     return render_template('create_auction.html', categories=categories)
+
+# ===============================
+# 🔧 Edit Auction
+# ===============================
+@app.route('/edit_auction/<int:auction_id>', methods=['GET', 'POST'])
+@login_required
+def edit_auction(auction_id):
+    """Allow user to edit their auction details"""
+    auction = db_manager.get_auction_by_id(auction_id)
+
+    if not auction:
+        flash('Auction not found', 'danger')
+        return redirect(url_for('dashboard'))
+
+    if auction['seller_id'] != current_user.id:
+        flash('You are not authorized to edit this auction.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    categories = db_manager.get_categories()
+
+    if request.method == 'POST':
+        title = request.form.get('title')
+        description = request.form.get('description')
+        category_id = request.form.get('category_id')
+        duration_days = request.form.get('duration_days', type=int)
+
+        if not title or not description:
+            flash('Title and description are required.', 'danger')
+        else:
+            success = db_manager.update_auction_info(
+                auction_id=auction_id,
+                title=title,
+                description=description,
+                category_id=category_id,
+                duration_days=duration_days
+            )
+            if success:
+                flash('Auction updated successfully!', 'success')
+                return redirect(url_for('auction_detail', auction_id=auction_id))
+            else:
+                flash('Failed to update auction.', 'danger')
+
+    return render_template('edit_auction.html', auction=auction, categories=categories)
+
+
+# ===============================
+# 🗑️ Delete Auction
+# ===============================
+@app.route('/delete_auction/<int:auction_id>', methods=['POST'])
+@login_required
+def delete_auction(auction_id):
+    """Allow user to delete their auction"""
+    auction = db_manager.get_auction_by_id(auction_id)
+
+    if not auction:
+        flash('Auction not found', 'danger')
+    elif auction['seller_id'] != current_user.id:
+        flash('Unauthorized action.', 'danger')
+    else:
+        success = db_manager.delete_auction(auction_id)
+        if success:
+            flash('Auction deleted successfully.', 'success')
+        else:
+            flash('Failed to delete auction.', 'danger')
+
+    return redirect(url_for('dashboard'))
+
+
+# ===============================
+# 💰 Sell Immediately
+# ===============================
+@app.route('/sell_now/<int:auction_id>', methods=['POST'])
+@login_required
+def sell_now(auction_id):
+    """Let seller end auction early and sell to current highest bidder"""
+    auction = db_manager.get_auction_by_id(auction_id)
+
+    if not auction:
+        flash('Auction not found.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    if auction['seller_id'] != current_user.id:
+        flash('You are not authorized to perform this action.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    highest_bid = db_manager.get_highest_bid(auction_id)
+    if not highest_bid:
+        flash("Cannot sell immediately — no bids have been placed yet.", "warning")
+        return redirect(url_for('auction_detail', auction_id=auction_id))
+
+    success, message = db_manager.sell_now(auction_id)
+    if success:
+        # Notify winner
+        db_manager.create_notification(
+            user_id=highest_bid['bidder_id'],
+            message=f"You won '{auction['title']}'! Please complete your payment."
+        )
+        flash(message, "success")
+    else:
+        flash(message, "danger")
+
+    return redirect(url_for('dashboard'))
+
+
 
 @app.route('/browse')
 def browse_auctions():

@@ -288,10 +288,7 @@ MAIL_PASSWORD = 'your_app_password'
 ## Support
 
 For issues or questions about the implementation, please refer to the inline code comments or create an issue in your project repository.
-
-## License
-
-This project is provided as-is for educational and commercial purposes.
+https://www.nga.gov/artworks/74796-japanese-footbridge
 
 ---
 venv\Scripts\activate
