@@ -739,6 +739,19 @@ def auction_history():
                          total_spent=total_spent,
                          total_earned=total_earned)
 
+@app.route('/auction/<int:auction_id>/accept_bid', methods=['POST'])
+@login_required
+def accept_bid(auction_id):
+    """Allow seller to accept current bid and end auction immediately"""
+    success, message = db_manager.end_auction_immediately(auction_id, current_user.id)
+
+    if success:
+        flash(message, 'success')
+    else:
+        flash(message, 'danger')
+
+    return redirect(url_for('auction_history'))
+
 @app.route('/api/notifications')
 @login_required
 def get_notifications():

@@ -59,10 +59,11 @@
                                 <th>Title</th>
                                 <th>Category</th>
                                 <th>Start Price</th>
-                                <th>Final Price</th>
+                                <th>Current/Final Price</th>
                                 <th>Bids</th>
                                 <th>Status</th>
                                 <th>Winner</th>
+                                <th>Payment</th>
                                 <th>Created</th>
                                 <th>Actions</th>
                             </tr>
@@ -71,7 +72,7 @@
                             {% for auction in my_past_auctions %}
                             <tr>
                                 <td>
-                                    <img src="{{ url_for('static', filename='uploads/' + auction.image_path) }}" 
+                                    <img src="{{ url_for('static', filename='uploads/' + auction.image_path) }}"
                                          style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;"
                                          alt="{{ auction.title }}"
                                          onerror="this.src='https://via.placeholder.com/50x50?text=No+Image'">
@@ -91,12 +92,32 @@
                                     {% endif %}
                                 </td>
                                 <td>{{ auction.winner_name or '-' }}</td>
+                                <td>
+                                    {% if auction.payment_status == 'paid' %}
+                                        <span class="badge bg-success"><i class="bi bi-check-circle"></i> Paid</span>
+                                    {% elif auction.payment_status == 'pending' %}
+                                        <span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> Pending</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
                                 <td><small>{{ auction.created_at|timeago }}</small></td>
                                 <td>
-                                    <a href="{{ url_for('auction_detail', auction_id=auction.auction_id) }}" 
-                                       class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
+                                    <div class="btn-group-vertical btn-group-sm" role="group">
+                                        <a href="{{ url_for('auction_detail', auction_id=auction.auction_id) }}"
+                                           class="btn btn-sm btn-outline-primary mb-1">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                        {% if auction.status == 'active' and auction.bid_count > 0 %}
+                                        <form method="POST" action="{{ url_for('accept_bid', auction_id=auction.auction_id) }}"
+                                              onsubmit="return confirm('Are you sure you want to accept the current bid and end this auction immediately?');"
+                                              style="display: inline;">
+                                            <button type="submit" class="btn btn-sm btn-success w-100">
+                                                <i class="bi bi-check-circle"></i> Accept Bid
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -126,7 +147,9 @@
                                 <th>Auction Title</th>
                                 <th>My Bid</th>
                                 <th>Current/Final Bid</th>
-                                <th>Status</th>
+                                <th>Auction Status</th>
+                                <th>Bid Status</th>
+                                <th>Payment</th>
                                 <th>Bid Date</th>
                                 <th>Actions</th>
                             </tr>
@@ -135,7 +158,7 @@
                             {% for bid in my_bid_history %}
                             <tr>
                                 <td>
-                                    <img src="{{ url_for('static', filename='uploads/' + bid.image_path) }}" 
+                                    <img src="{{ url_for('static', filename='uploads/' + bid.image_path) }}"
                                          style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;"
                                          alt="{{ bid.title }}"
                                          onerror="this.src='https://via.placeholder.com/50x50?text=No+Image'">
@@ -147,25 +170,59 @@
                                 </td>
                                 <td>
                                     {% if bid.status == 'active' %}
+                                        <span class="badge bg-success"><i class="bi bi-clock-history"></i> Active</span>
+                                    {% elif bid.status == 'completed' %}
+                                        <span class="badge bg-secondary"><i class="bi bi-check-circle"></i> Ended</span>
+                                    {% elif bid.status == 'cancelled' %}
+                                        <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Cancelled</span>
+                                    {% else %}
+                                        <span class="badge bg-info">{{ bid.status|capitalize }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if bid.status == 'active' %}
                                         {% if bid.is_winning %}
-                                        <span class="badge bg-success">Winning</span>
+                                        <span class="badge bg-success"><i class="bi bi-trophy"></i> Winning</span>
                                         {% else %}
-                                        <span class="badge bg-warning">Outbid</span>
+                                        <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle"></i> Outbid</span>
                                         {% endif %}
                                     {% elif bid.status == 'completed' %}
                                         {% if bid.is_winning %}
-                                        <span class="badge bg-primary">Won</span>
+                                        <span class="badge bg-primary"><i class="bi bi-trophy-fill"></i> Won</span>
                                         {% else %}
-                                        <span class="badge bg-secondary">Lost</span>
+                                        <span class="badge bg-secondary"><i class="bi bi-dash-circle"></i> Lost</span>
                                         {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if bid.is_winning and bid.status == 'completed' %}
+                                        {% if bid.payment_status == 'paid' %}
+                                            <span class="badge bg-success"><i class="bi bi-check-circle"></i> Paid</span>
+                                        {% elif bid.payment_status == 'pending' %}
+                                            <span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> Pending</span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
                                     {% endif %}
                                 </td>
                                 <td><small>{{ bid.bid_time|timeago }}</small></td>
                                 <td>
-                                    <a href="{{ url_for('auction_detail', auction_id=bid.auction_id) }}" 
-                                       class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-eye"></i> View
-                                    </a>
+                                    <div class="btn-group-vertical btn-group-sm" role="group">
+                                        <a href="{{ url_for('auction_detail', auction_id=bid.auction_id) }}"
+                                           class="btn btn-sm btn-outline-primary mb-1">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                        {% if bid.is_winning and bid.status == 'completed' and bid.payment_status == 'pending' %}
+                                        <a href="{{ url_for('payment_detail', auction_id=bid.auction_id) }}"
+                                           class="btn btn-sm btn-warning">
+                                            <i class="bi bi-credit-card"></i> Pay
+                                        </a>
+                                        {% endif %}
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}

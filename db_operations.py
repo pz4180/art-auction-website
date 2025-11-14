@@ -300,11 +300,11 @@ class DatabaseManager:
         conn = self.get_connection()
         if not conn:
             return []
-        
+
         try:
             cursor = conn.cursor(dictionary=True)
-            
-            query = """SELECT b.*, a.title, a.image_path, a.end_time, a.status,
+
+            query = """SELECT b.*, a.title, a.image_path, a.end_time, a.status, a.payment_status,
                       MAX(b2.bid_amount) as current_highest_bid,
                       CASE WHEN MAX(b2.bid_amount) = b.bid_amount THEN 1 ELSE 0 END as is_winning
                       FROM bids b
@@ -313,10 +313,10 @@ class DatabaseManager:
                       WHERE b.bidder_id = %s
                       GROUP BY b.bid_id
                       ORDER BY b.bid_time DESC"""
-            
+
             cursor.execute(query, (user_id,))
             return cursor.fetchall()
-        
+
         except Error as e:
             print(f"Error getting user bids: {e}")
             return []
@@ -964,6 +964,73 @@ class DatabaseManager:
         except Error as e:
             print(f"Error getting total earned: {e}")
             return 0.00
+        finally:
+            if conn.is_connected():
+                cursor.close()
+                conn.close()
+
+    def end_auction_immediately(self, auction_id, seller_id):
+        """End an active auction immediately and sell to current highest bidder"""
+        conn = self.get_connection()
+        if not conn:
+            return False, "Database connection failed"
+
+        try:
+            cursor = conn.cursor(dictionary=True)
+
+            # Verify the seller owns this auction and it's active
+            cursor.execute("""
+                SELECT auction_id, seller_id, title, status, current_bid
+                FROM auctions
+                WHERE auction_id = %s AND seller_id = %s
+            """, (auction_id, seller_id))
+
+            auction = cursor.fetchone()
+
+            if not auction:
+                return False, "Auction not found or you don't have permission"
+
+            if auction['status'] != 'active':
+                return False, "Auction is not active"
+
+            # Get the current highest bidder
+            cursor.execute("""
+                SELECT bidder_id, bid_amount
+                FROM bids
+                WHERE auction_id = %s
+                ORDER BY bid_amount DESC
+                LIMIT 1
+            """, (auction_id,))
+
+            highest_bid = cursor.fetchone()
+
+            if not highest_bid:
+                return False, "No bids have been placed yet"
+
+            # Update auction: set status to completed, set winner, set sold_price
+            cursor.execute("""
+                UPDATE auctions
+                SET status = 'completed',
+                    winner_id = %s,
+                    sold_price = %s,
+                    end_time = NOW()
+                WHERE auction_id = %s
+            """, (highest_bid['bidder_id'], highest_bid['bid_amount'], auction_id))
+
+            # Notify the winner
+            self.create_notification(
+                highest_bid['bidder_id'],
+                f"Congratulations! The seller accepted your bid for '{auction['title']}'. Please complete payment.",
+                'won'
+            )
+
+            conn.commit()
+            return True, "Auction ended successfully. Buyer has been notified."
+
+        except Error as e:
+            print(f"Error ending auction immediately: {e}")
+            conn.rollback()
+            return False, f"Database error: {str(e)}"
         finally:
             if conn.is_connected():
                 cursor.close()
