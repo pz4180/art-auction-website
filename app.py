@@ -457,10 +457,27 @@ def wallet_topup():
     """Process wallet top-up"""
     try:
         raw_amount = request.form.get('amount')
-        amount = Decimal(raw_amount)
+
+        # Validate amount input
+        if not raw_amount or raw_amount.strip() == '':
+            flash('Please enter an amount', 'danger')
+            return redirect(url_for('wallet'))
+
+        # Convert to Decimal
+        try:
+            amount = Decimal(raw_amount)
+        except (ValueError, TypeError, ArithmeticError) as e:
+            flash('Invalid amount format. Please enter a valid number.', 'danger')
+            return redirect(url_for('wallet'))
+
         payment_method = request.form.get('payment_method', 'card')
 
-        if not amount or amount < 10:
+        # Validate amount range
+        if amount <= 0:
+            flash('Amount must be greater than zero', 'danger')
+            return redirect(url_for('wallet'))
+
+        if amount < 10:
             flash('Minimum top-up amount is RM10.00', 'danger')
             return redirect(url_for('wallet'))
 
@@ -480,12 +497,14 @@ def wallet_topup():
         if success:
             flash(f'Successfully added RM{amount} to your wallet!', 'success')
         else:
-            flash('Failed to top-up wallet.', 'danger')
+            flash('Failed to top-up wallet. Please check if the wallet system is properly configured in the database.', 'danger')
 
     except Exception as e:
         print(f"Error in wallet_topup: {e}")
-        flash(f'Database error: {e}', 'danger')
-        
+        import traceback
+        traceback.print_exc()
+        flash(f'An error occurred: {str(e)}. Please contact support if this persists.', 'danger')
+
     return redirect(url_for('wallet'))
 
 @app.route('/wallet/cashout', methods=['POST'])
