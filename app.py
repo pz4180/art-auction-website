@@ -426,17 +426,74 @@ def process_payment(auction_id):
         flash('You are not authorized to make payment for this auction', 'danger')
         return redirect(url_for('dashboard'))
 
-    # In a real application, this would integrate with a payment gateway
-    # For now, we'll just mark the payment as complete
     payment_method = request.form.get('payment_method', 'credit_card')
 
-    # Mark payment as complete
-    success = db_manager.mark_payment_complete(auction_id, current_user.id)
+    # Get the final price
+    final_price = Decimal(str(auction.get('sold_price') or auction.get('current_bid') or 0))
 
-    if success:
-        flash(f'Payment completed successfully! Thank you for your purchase.', 'success')
+    if final_price <= 0:
+        flash('Invalid payment amount', 'danger')
+        return redirect(url_for('payment_center'))
+
+    # Handle wallet payment
+    if payment_method == 'wallet':
+        try:
+            # Get buyer's wallet balance
+            buyer_balance = Decimal(str(db_manager.get_wallet_balance(current_user.id)))
+
+            # Check if buyer has sufficient balance
+            if buyer_balance < final_price:
+                flash(f'Insufficient wallet balance. You need {final_price - buyer_balance:.2f} more. Please top up your wallet.', 'danger')
+                return redirect(url_for('payment_detail', auction_id=auction_id))
+
+            # Deduct from buyer's wallet
+            success, message = db_manager.deduct_from_wallet(
+                current_user.id,
+                final_price,
+                'payment_made',
+                f'Payment for auction #{auction_id}: {auction["title"]}',
+                auction_id
+            )
+
+            if not success:
+                flash(f'Payment failed: {message}', 'danger')
+                return redirect(url_for('payment_detail', auction_id=auction_id))
+
+            # Add to seller's wallet
+            seller_id = auction['seller_id']
+            success = db_manager.add_to_wallet(
+                seller_id,
+                final_price,
+                'payment_received',
+                f'Payment received for auction #{auction_id}: {auction["title"]}',
+                auction_id
+            )
+
+            if not success:
+                flash('Payment processing error. Please contact support.', 'danger')
+                return redirect(url_for('payment_detail', auction_id=auction_id))
+
+            # Mark payment as complete
+            db_manager.mark_payment_complete(auction_id, current_user.id)
+
+            flash(f'Payment of {final_price:.2f} completed successfully using your wallet! Thank you for your purchase.', 'success')
+
+        except Exception as e:
+            print(f"Error processing wallet payment: {e}")
+            import traceback
+            traceback.print_exc()
+            flash('An error occurred while processing your payment. Please try again.', 'danger')
+            return redirect(url_for('payment_detail', auction_id=auction_id))
+
     else:
-        flash('There was an error processing your payment. Please try again.', 'danger')
+        # For other payment methods (credit card, PayPal, etc.)
+        # In a real application, this would integrate with a payment gateway
+        success = db_manager.mark_payment_complete(auction_id, current_user.id)
+
+        if success:
+            flash(f'Payment completed successfully! Thank you for your purchase.', 'success')
+        else:
+            flash('There was an error processing your payment. Please try again.', 'danger')
 
     return redirect(url_for('payment_center'))
 
