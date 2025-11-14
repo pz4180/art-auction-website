@@ -4,7 +4,7 @@ USE art_auction_db;
 
 -- Add wallet_balance column to users table
 ALTER TABLE users
-ADD COLUMN IF NOT EXISTS wallet_balance DECIMAL(10, 2) DEFAULT 0.00 AFTER password_hash;
+ADD COLUMN wallet_balance DECIMAL(10, 2) DEFAULT 0.00 AFTER password_hash;
 
 -- Create wallet_transactions table to track all wallet activities
 CREATE TABLE IF NOT EXISTS wallet_transactions (
