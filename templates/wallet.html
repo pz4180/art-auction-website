@@ -96,11 +96,10 @@
                             <option value="Other">Other</option>
                         </select>
                     </div>
-                    <div class="mb-3">
+
                     <button type="submit" class="btn btn-warning w-100" {% if wallet_balance < 10 %}disabled{% endif %}>
                         <i class="bi bi-cash-coin"></i> Request Cash Out
                     </button>
-                    </div>
                 </form>
             </div>
         </div>
@@ -175,7 +174,7 @@ document.getElementById('topupForm').addEventListener('submit', function(e) {
     if (amount < 10) {
         e.preventDefault();
         alert('Minimum top-up amount is RM10.00');
-    } else if (amount > 10000) {
+    } else if (amount > 1000000) {
         e.preventDefault();
         alert('Maximum top-up amount is RM10,000.00');
     }
