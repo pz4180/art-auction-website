@@ -363,20 +363,20 @@ class DatabaseManager:
         conn = self.get_connection()
         if not conn:
             return []
-        
+
         try:
             cursor = conn.cursor(dictionary=True)
-            
+
             query = """SELECT a.*, u.username as seller_name, c.category_name
                       FROM auctions a
                       JOIN users u ON a.seller_id = u.user_id
                       LEFT JOIN categories c ON a.category_id = c.category_id
-                      WHERE a.winner_id = %s AND a.status = 'completed'
+                      WHERE a.winner_id = %s AND a.status IN ('completed', 'sold')
                       ORDER BY a.end_time DESC"""
-            
+
             cursor.execute(query, (user_id,))
             return cursor.fetchall()
-        
+
         except Error as e:
             print(f"Error getting won auctions: {e}")
             return []
