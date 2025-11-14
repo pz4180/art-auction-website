@@ -100,3 +100,4 @@ WHERE a.status = 'active' AND a.end_time > NOW()
 GROUP BY a.auction_id;
 
 ALTER TABLE auctions ADD COLUMN sold_price DECIMAL(10,2) NULL AFTER current_bid;
+ALTER TABLE auctions ADD COLUMN payment_status ENUM('pending', 'paid') DEFAULT 'pending' AFTER sold_price;
