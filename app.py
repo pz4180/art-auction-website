@@ -9,6 +9,7 @@ import imghdr
 from PIL import Image
 from config import Config
 from db_operations import db_manager
+from decimal import Decimal
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -405,7 +406,8 @@ def payment_detail(auction_id):
     auction['final_price'] = auction.get('sold_price') or auction.get('current_bid')
 
     # Get user's wallet balance
-    wallet_balance = db_manager.get_wallet_balance(current_user.id)
+    raw_balance = db_manager.get_wallet_balance(current_user.id)
+    wallet_balance = Decimal(str(raw_balance))
 
     return render_template('payment_detail.html', auction=auction, wallet_balance=wallet_balance)
 
@@ -454,15 +456,16 @@ def wallet():
 def wallet_topup():
     """Process wallet top-up"""
     try:
-        amount = request.form.get('amount', type=float)
+        raw_amount = request.form.get('amount')
+        amount = Decimal(raw_amount)
         payment_method = request.form.get('payment_method', 'card')
 
         if not amount or amount < 10:
             flash('Minimum top-up amount is RM10.00', 'danger')
             return redirect(url_for('wallet'))
 
-        if amount > 10000:
-            flash('Maximum top-up amount is RM10,000.00', 'danger')
+        if amount > 1000000:
+            flash('Maximum top-up amount is RM1,000.00', 'danger')
             return redirect(url_for('wallet'))
 
         # In real application, this would integrate with payment gateway
@@ -475,14 +478,14 @@ def wallet_topup():
         )
 
         if success:
-            flash(f'Successfully added RM{amount:.2f} to your wallet!', 'success')
+            flash(f'Successfully added RM{amount} to your wallet!', 'success')
         else:
-            flash('Failed to top-up wallet. Please run database migration: mysql -u root -p art_auction_db < add_wallet_system.sql', 'danger')
+            flash('Failed to top-up wallet.', 'danger')
 
     except Exception as e:
         print(f"Error in wallet_topup: {e}")
-        flash(f'Database error: {str(e)}. Please ensure wallet tables exist by running: add_wallet_system.sql', 'danger')
-
+        flash(f'Database error: {e}', 'danger')
+        
     return redirect(url_for('wallet'))
 
 @app.route('/wallet/cashout', methods=['POST'])
@@ -635,25 +638,23 @@ def auction_history():
     # Get won auctions
     won_auctions = db_manager.get_won_auctions(current_user.id)
 
-    # Calculate total spent (only paid auctions)
-    total_spent = sum(
+        # Calculate total spent (float)
+    total_spent_raw = sum(
         (auction.get('sold_price') or auction.get('current_bid') or 0)
         for auction in won_auctions
         if auction.get('payment_status') == 'paid'
     )
 
-    return render_template('auction_history.html',
-                         my_past_auctions=my_past_auctions,
-                         my_bid_history=my_bid_history,
-                         won_auctions=won_auctions,
-                         total_spent=total_spent)
+    # Convert to Decimal
+    total_spent = Decimal(str(total_spent_raw))
 
     # Get total earned (as seller from paid auctions)
     try:
         total_earned = db_manager.get_total_earned(current_user.id)
+        total_earned = Decimal(str(total_earned))  # ensure Decimal
     except Exception as e:
         print(f"Error getting total earned: {e}")
-        total_earned = 0.00  # Default if wallet_transactions table doesn't exist yet
+        total_earned = Decimal("0.00")
 
     return render_template('auction_history.html',
                          my_past_auctions=my_past_auctions,
