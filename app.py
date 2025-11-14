@@ -36,6 +36,14 @@ def load_user(user_id):
         return User(user_data)
     return None
 
+# Context processor to make wallet balance available to all templates
+@app.context_processor
+def inject_wallet_balance():
+    if current_user.is_authenticated:
+        wallet_balance = db_manager.get_wallet_balance(current_user.id)
+        return dict(user_wallet_balance=wallet_balance)
+    return dict(user_wallet_balance=0.00)
+
 # Helper function to check allowed file extensions
 def allowed_file(filename):
     return '.' in filename and \
@@ -394,7 +402,10 @@ def payment_detail(auction_id):
     # Add final_price field
     auction['final_price'] = auction.get('sold_price') or auction.get('current_bid')
 
-    return render_template('payment_detail.html', auction=auction)
+    # Get user's wallet balance
+    wallet_balance = db_manager.get_wallet_balance(current_user.id)
+
+    return render_template('payment_detail.html', auction=auction, wallet_balance=wallet_balance)
 
 @app.route('/payment/<int:auction_id>/process', methods=['POST'])
 @login_required
@@ -411,19 +422,106 @@ def process_payment(auction_id):
         flash('You are not authorized to make payment for this auction', 'danger')
         return redirect(url_for('dashboard'))
 
-    # In a real application, this would integrate with a payment gateway
-    # For now, we'll just mark the payment as complete
     payment_method = request.form.get('payment_method', 'credit_card')
 
-    # Mark payment as complete
-    success = db_manager.mark_payment_complete(auction_id, current_user.id)
-
-    if success:
-        flash(f'Payment completed successfully! Thank you for your purchase.', 'success')
+    # Handle wallet payment
+    if payment_method == 'wallet':
+        success, message = db_manager.process_wallet_payment(auction_id, current_user.id)
+        if success:
+            flash(message, 'success')
+        else:
+            flash(message, 'danger')
     else:
-        flash('There was an error processing your payment. Please try again.', 'danger')
+        # Handle other payment methods (credit card, PayPal, etc.)
+        # In real application, this would integrate with payment gateway
+        # For demo, we'll just mark the payment as complete
+        success = db_manager.mark_payment_complete(auction_id, current_user.id)
+
+        if success:
+            flash(f'Payment completed successfully! Thank you for your purchase.', 'success')
+        else:
+            flash('There was an error processing your payment. Please try again.', 'danger')
 
     return redirect(url_for('payment_center'))
+
+@app.route('/wallet')
+@login_required
+def wallet():
+    """Wallet page showing balance, transactions, and top-up/cash-out options"""
+    wallet_balance = db_manager.get_wallet_balance(current_user.id)
+    transactions = db_manager.get_wallet_transactions(current_user.id, limit=50)
+
+    return render_template('wallet.html',
+                         wallet_balance=wallet_balance,
+                         transactions=transactions)
+
+@app.route('/wallet/topup', methods=['POST'])
+@login_required
+def wallet_topup():
+    """Process wallet top-up"""
+    amount = request.form.get('amount', type=float)
+    payment_method = request.form.get('payment_method', 'card')
+
+    if not amount or amount < 10:
+        flash('Minimum top-up amount is RM10.00', 'danger')
+        return redirect(url_for('wallet'))
+
+    if amount > 10000:
+        flash('Maximum top-up amount is RM10,000.00', 'danger')
+        return redirect(url_for('wallet'))
+
+    # In real application, this would integrate with payment gateway
+    # For demo, we'll add funds immediately
+    success = db_manager.add_to_wallet(
+        current_user.id,
+        amount,
+        'top_up',
+        f'Wallet top-up via {payment_method}'
+    )
+
+    if success:
+        flash(f'Successfully added {amount:.2f} to your wallet!', 'success')
+    else:
+        flash('Failed to top-up wallet. Please try again.', 'danger')
+
+    return redirect(url_for('wallet'))
+
+@app.route('/wallet/cashout', methods=['POST'])
+@login_required
+def wallet_cashout():
+    """Process wallet cash-out"""
+    amount = request.form.get('amount', type=float)
+    bank_account = request.form.get('bank_account', '')
+    bank_name = request.form.get('bank_name', '')
+
+    if not amount or amount < 10:
+        flash('Minimum cash-out amount is RM10.00', 'danger')
+        return redirect(url_for('wallet'))
+
+    if not bank_account or not bank_name:
+        flash('Please provide bank account details', 'danger')
+        return redirect(url_for('wallet'))
+
+    # Check if user has sufficient balance
+    current_balance = db_manager.get_wallet_balance(current_user.id)
+    if current_balance < amount:
+        flash('Insufficient wallet balance', 'danger')
+        return redirect(url_for('wallet'))
+
+    # Deduct from wallet
+    success, message = db_manager.deduct_from_wallet(
+        current_user.id,
+        amount,
+        'cash_out',
+        f'Cash out to {bank_name} account {bank_account[-4:]}'
+    )
+
+    if success:
+        flash(f'Cash out request for RM{amount:.2f} submitted successfully! Funds will be transferred to your {bank_name} account within 1-3 business days.', 'success')
+    else:
+        flash(f'Failed to process cash-out: {message}', 'danger')
+
+    return redirect(url_for('wallet'))
 
 
 @app.route('/browse')
@@ -545,11 +643,15 @@ def auction_history():
         if auction.get('payment_status') == 'paid'
     )
 
+    # Get total earned (as seller from paid auctions)
+    total_earned = db_manager.get_total_earned(current_user.id)
+
     return render_template('auction_history.html',
                          my_past_auctions=my_past_auctions,
                          my_bid_history=my_bid_history,
                          won_auctions=won_auctions,
-                         total_spent=total_spent)
+                         total_spent=total_spent,
+                         total_earned=total_earned)
 
 @app.route('/api/notifications')
 @login_required

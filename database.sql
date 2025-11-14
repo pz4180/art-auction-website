@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
+    wallet_balance DECIMAL(10, 2) DEFAULT 0.00,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_username (username),
     INDEX idx_email (email)
@@ -98,6 +99,20 @@ LEFT JOIN categories c ON a.category_id = c.category_id
 LEFT JOIN bids b ON a.auction_id = b.auction_id
 WHERE a.status = 'active' AND a.end_time > NOW()
 GROUP BY a.auction_id;
+
+-- Wallet transactions table
+CREATE TABLE IF NOT EXISTS wallet_transactions (
+    transaction_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    transaction_type ENUM('top_up', 'payment_received', 'payment_made', 'cash_out') NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    balance_after DECIMAL(10, 2) NOT NULL,
+    description TEXT,
+    reference_id INT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    INDEX idx_user_transactions (user_id, created_at DESC)
+);
 
 ALTER TABLE auctions ADD COLUMN sold_price DECIMAL(10,2) NULL AFTER current_bid;
 ALTER TABLE auctions ADD COLUMN payment_status ENUM('pending', 'paid') DEFAULT 'pending' AFTER sold_price;

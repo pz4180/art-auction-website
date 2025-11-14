@@ -728,6 +728,246 @@ class DatabaseManager:
             if conn.is_connected():
                 cursor.close()
                 conn.close()
+    # ==================== WALLET OPERATIONS ====================
+
+    def get_wallet_balance(self, user_id):
+        """Get user's current wallet balance"""
+        conn = self.get_connection()
+        if not conn:
+            return 0.00
+
+        try:
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT wallet_balance FROM users WHERE user_id = %s", (user_id,))
+            result = cursor.fetchone()
+            return float(result['wallet_balance']) if result else 0.00
+
+        except Error as e:
+            print(f"Error getting wallet balance: {e}")
+            return 0.00
+        finally:
+            if conn.is_connected():
+                cursor.close()
+                conn.close()
+
+    def add_to_wallet(self, user_id, amount, transaction_type, description, reference_id=None):
+        """Add funds to user's wallet and record transaction"""
+        conn = self.get_connection()
+        if not conn:
+            return False
+
+        try:
+            cursor = conn.cursor(dictionary=True)
+
+            # Get current balance
+            cursor.execute("SELECT wallet_balance FROM users WHERE user_id = %s", (user_id,))
+            result = cursor.fetchone()
+            current_balance = float(result['wallet_balance']) if result else 0.00
+
+            # Calculate new balance
+            new_balance = current_balance + float(amount)
+
+            # Update user's wallet balance
+            cursor.execute("""UPDATE users SET wallet_balance = %s WHERE user_id = %s""",
+                         (new_balance, user_id))
+
+            # Record transaction
+            cursor.execute("""
+                INSERT INTO wallet_transactions
+                (user_id, transaction_type, amount, balance_after, description, reference_id)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (user_id, transaction_type, amount, new_balance, description, reference_id))
+
+            conn.commit()
+            return True
+
+        except Error as e:
+            print(f"Error adding to wallet: {e}")
+            conn.rollback()
+            return False
+        finally:
+            if conn.is_connected():
+                cursor.close()
+                conn.close()
+
+    def deduct_from_wallet(self, user_id, amount, transaction_type, description, reference_id=None):
+        """Deduct funds from user's wallet and record transaction"""
+        conn = self.get_connection()
+        if not conn:
+            return False, "Database connection failed"
+
+        try:
+            cursor = conn.cursor(dictionary=True)
+
+            # Get current balance
+            cursor.execute("SELECT wallet_balance FROM users WHERE user_id = %s", (user_id,))
+            result = cursor.fetchone()
+            current_balance = float(result['wallet_balance']) if result else 0.00
+
+            # Check if sufficient balance
+            if current_balance < float(amount):
+                return False, "Insufficient wallet balance"
+
+            # Calculate new balance
+            new_balance = current_balance - float(amount)
+
+            # Update user's wallet balance
+            cursor.execute("""UPDATE users SET wallet_balance = %s WHERE user_id = %s""",
+                         (new_balance, user_id))
+
+            # Record transaction
+            cursor.execute("""
+                INSERT INTO wallet_transactions
+                (user_id, transaction_type, amount, balance_after, description, reference_id)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (user_id, transaction_type, amount, new_balance, description, reference_id))
+
+            conn.commit()
+            return True, "Success"
+
+        except Error as e:
+            print(f"Error deducting from wallet: {e}")
+            conn.rollback()
+            return False, str(e)
+        finally:
+            if conn.is_connected():
+                cursor.close()
+                conn.close()
+
+    def get_wallet_transactions(self, user_id, limit=50):
+        """Get user's wallet transaction history"""
+        conn = self.get_connection()
+        if not conn:
+            return []
+
+        try:
+            cursor = conn.cursor(dictionary=True)
+            query = """
+                SELECT * FROM wallet_transactions
+                WHERE user_id = %s
+                ORDER BY created_at DESC
+                LIMIT %s
+            """
+            cursor.execute(query, (user_id, limit))
+            return cursor.fetchall()
+
+        except Error as e:
+            print(f"Error getting wallet transactions: {e}")
+            return []
+        finally:
+            if conn.is_connected():
+                cursor.close()
+                conn.close()
+
+    def process_wallet_payment(self, auction_id, buyer_id):
+        """Process payment using wallet (buyer pays, seller receives)"""
+        conn = self.get_connection()
+        if not conn:
+            return False, "Database connection failed"
+
+        try:
+            cursor = conn.cursor(dictionary=True)
+
+            # Get auction details
+            cursor.execute("""
+                SELECT seller_id, title, sold_price, current_bid, winner_id
+                FROM auctions
+                WHERE auction_id = %s
+            """, (auction_id,))
+            auction = cursor.fetchone()
+
+            if not auction:
+                return False, "Auction not found"
+
+            if auction['winner_id'] != buyer_id:
+                return False, "You are not the winner of this auction"
+
+            seller_id = auction['seller_id']
+            amount = float(auction['sold_price'] or auction['current_bid'])
+            title = auction['title']
+
+            # Get buyer's wallet balance
+            cursor.execute("SELECT wallet_balance FROM users WHERE user_id = %s", (buyer_id,))
+            buyer = cursor.fetchone()
+            buyer_balance = float(buyer['wallet_balance']) if buyer else 0.00
+
+            if buyer_balance < amount:
+                return False, f"Insufficient wallet balance. You need {amount - buyer_balance:.2f} more."
+
+            # Deduct from buyer
+            new_buyer_balance = buyer_balance - amount
+            cursor.execute("UPDATE users SET wallet_balance = %s WHERE user_id = %s",
+                         (new_buyer_balance, buyer_id))
+
+            # Add to seller
+            cursor.execute("SELECT wallet_balance FROM users WHERE user_id = %s", (seller_id,))
+            seller = cursor.fetchone()
+            seller_balance = float(seller['wallet_balance']) if seller else 0.00
+            new_seller_balance = seller_balance + amount
+            cursor.execute("UPDATE users SET wallet_balance = %s WHERE user_id = %s",
+                         (new_seller_balance, seller_id))
+
+            # Record buyer transaction
+            cursor.execute("""
+                INSERT INTO wallet_transactions
+                (user_id, transaction_type, amount, balance_after, description, reference_id)
+                VALUES (%s, 'payment_made', %s, %s, %s, %s)
+            """, (buyer_id, amount, new_buyer_balance, f"Payment for '{title}'", auction_id))
+
+            # Record seller transaction
+            cursor.execute("""
+                INSERT INTO wallet_transactions
+                (user_id, transaction_type, amount, balance_after, description, reference_id)
+                VALUES (%s, 'payment_received', %s, %s, %s, %s)
+            """, (seller_id, amount, new_seller_balance, f"Payment received for '{title}'", auction_id))
+
+            # Mark auction as paid
+            cursor.execute("UPDATE auctions SET payment_status = 'paid' WHERE auction_id = %s",
+                         (auction_id,))
+
+            # Notify seller
+            self.create_notification(
+                seller_id,
+                f"Payment of RM{amount:.2f} received for '{title}' (added to wallet)",
+                'won'
+            )
+
+            conn.commit()
+            return True, "Payment completed successfully using wallet"
+
+        except Error as e:
+            print(f"Error processing wallet payment: {e}")
+            conn.rollback()
+            return False, str(e)
+        finally:
+            if conn.is_connected():
+                cursor.close()
+                conn.close()
+
+    def get_total_earned(self, user_id):
+        """Get total amount earned by seller from paid auctions"""
+        conn = self.get_connection()
+        if not conn:
+            return 0.00
+
+        try:
+            cursor = conn.cursor(dictionary=True)
+            query = """
+                SELECT SUM(amount) as total_earned
+                FROM wallet_transactions
+                WHERE user_id = %s AND transaction_type = 'payment_received'
+            """
+            cursor.execute(query, (user_id,))
+            result = cursor.fetchone()
+            return float(result['total_earned']) if result and result['total_earned'] else 0.00
+
+        except Error as e:
+            print(f"Error getting total earned: {e}")
+            return 0.00
+        finally:
+            if conn.is_connected():
+                cursor.close()
+                conn.close()
 
 
 # Create a singleton instance

@@ -266,35 +266,57 @@
 
 <!-- Summary Statistics -->
 <div class="row mt-4">
-    <div class="col-md-3">
-        <div class="card text-center">
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card text-center h-100">
             <div class="card-body">
                 <h3 style="color: var(--primary-color);">{{ my_past_auctions|length }}</h3>
-                <p class="text-muted">Total Auctions Created</p>
+                <p class="text-muted mb-0">Total Auctions Created</p>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-center">
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card text-center h-100">
             <div class="card-body">
                 <h3 style="color: var(--secondary-color);">{{ my_bid_history|length }}</h3>
-                <p class="text-muted">Total Bids Placed</p>
+                <p class="text-muted mb-0">Total Bids Placed</p>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-center">
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card text-center h-100">
             <div class="card-body">
                 <h3 style="color: var(--support-color);">{{ won_auctions|length }}</h3>
-                <p class="text-muted">Auctions Won</p>
+                <p class="text-muted mb-0">Auctions Won</p>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-center">
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card text-center h-100 border-success">
             <div class="card-body">
-                <h3 style="color: var(--neutral-color);">{{ total_spent|currency }}</h3>
-                <p class="text-muted">Total Spent (Paid)</p>
+                <h3 class="text-success">{{ total_earned|currency }}</h3>
+                <p class="text-muted mb-0"><i class="bi bi-arrow-down-circle"></i> Total Earned</p>
+                <small class="text-muted">From paid sales</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Financial Summary Row -->
+<div class="row mt-2 mb-4">
+    <div class="col-md-6 mb-3">
+        <div class="card border-danger">
+            <div class="card-body text-center">
+                <h4 class="text-danger">{{ total_spent|currency }}</h4>
+                <p class="text-muted mb-0"><i class="bi bi-arrow-up-circle"></i> Total Spent (Paid Purchases)</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card border-primary">
+            <div class="card-body text-center">
+                <h4 class="text-primary">{{ (total_earned - total_spent)|currency }}</h4>
+                <p class="text-muted mb-0"><i class="bi bi-cash-stack"></i> Net Balance</p>
+                <small class="text-muted">Earned - Spent</small>
             </div>
         </div>
     </div>
