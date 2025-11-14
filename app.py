@@ -575,6 +575,61 @@ def not_found_error(error):
 def internal_error(error):
     return render_template('500.html'), 500
 
+@app.route('/debug/payment-check')
+@login_required
+def debug_payment_check():
+    """Debug endpoint to check payment data"""
+    conn = db_manager.get_connection()
+    debug_info = {
+        'current_user_id': current_user.id,
+        'connection': 'Failed',
+        'columns': [],
+        'won_auctions_all': [],
+        'pending_payments': [],
+        'error': None
+    }
+
+    if conn:
+        debug_info['connection'] = 'Success'
+        try:
+            cursor = conn.cursor(dictionary=True)
+
+            # Check table columns
+            cursor.execute("DESCRIBE auctions")
+            debug_info['columns'] = [col['Field'] for col in cursor.fetchall()]
+
+            # Get all won auctions
+            cursor.execute("""
+                SELECT auction_id, title, status, winner_id,
+                       payment_status, sold_price, current_bid, end_time
+                FROM auctions
+                WHERE winner_id = %s
+                ORDER BY end_time DESC
+            """, (current_user.id,))
+            debug_info['won_auctions_all'] = cursor.fetchall()
+
+            # Get pending payments using the same query as get_pending_payments
+            cursor.execute("""
+                SELECT a.auction_id, a.title, a.status,
+                       a.payment_status, a.sold_price, a.current_bid,
+                       COALESCE(a.sold_price, a.current_bid) as final_price
+                FROM auctions a
+                WHERE a.winner_id = %s
+                AND a.status IN ('completed', 'sold')
+                AND (a.payment_status IS NULL OR a.payment_status = 'pending')
+                ORDER BY a.end_time DESC
+            """, (current_user.id,))
+            debug_info['pending_payments'] = cursor.fetchall()
+
+        except Exception as e:
+            debug_info['error'] = str(e)
+        finally:
+            if conn.is_connected():
+                cursor.close()
+                conn.close()
+
+    return jsonify(debug_info)
+
 # Template filters
 @app.template_filter('timeago')
 def timeago_filter(dt):
