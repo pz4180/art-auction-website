@@ -67,10 +67,40 @@
                     <div class="mb-3">
                         <label class="form-label">Payment Method</label>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="payment_method" id="creditCard" value="credit_card" checked>
+<!-- Wallet Payment Option -->
+                        <div class="form-check mb-2 p-3 border rounded" style="background-color: #f8f9fa;">
+                            <input class="form-check-input" type="radio" name="payment_method" id="wallet" value="wallet" checked>
+                            <label class="form-check-label w-100" for="wallet">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="bi bi-wallet2"></i> <strong>Pay with Wallet</strong>
+                                        <br>
+                                        <small class="text-muted">Fast and secure payment</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-muted small">Available Balance:</div>
+                                        <strong class="{% if wallet_balance >= auction.final_price %}text-success{% else %}text-danger{% endif %}">
+                                            {{ wallet_balance|currency }}
+                                        </strong>
+                                    </div>
+                                </div>
+                                {% if wallet_balance < auction.final_price %}
+                                <div class="alert alert-warning mt-2 mb-0">
+                                    <small>
+                                        <i class="bi bi-exclamation-triangle"></i>
+                                        Insufficient balance. Need {{ (auction.final_price - wallet_balance)|currency }} more.
+                                        <a href="{{ url_for('wallet') }}" target="_blank">Top up now</a>
+                                    </small>
+                                </div>
+                                {% endif %}
+                            </label>
+                        </div>
+
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" id="creditCard" value="credit_card">
                             <label class="form-check-label" for="creditCard">
                                 <i class="bi bi-credit-card"></i> Credit/Debit Card
-                            </label>
+                            </label>                            
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="payment_method" id="paypal" value="paypal">
@@ -154,5 +184,15 @@ document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
         }
     });
 });
+
+// Initially hide card details if wallet is selected
+document.addEventListener('DOMContentLoaded', function() {
+    const walletRadio = document.getElementById('wallet');
+    if (walletRadio && walletRadio.checked) {
+        document.getElementById('cardDetails').style.display = 'none';
+        document.getElementById('cardExtra').style.display = 'none';
+    }
+});
+
 </script>
 {% endblock %}
