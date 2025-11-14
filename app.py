@@ -465,7 +465,7 @@ def wallet_topup():
             return redirect(url_for('wallet'))
 
         if amount > 1000000:
-            flash('Maximum top-up amount is RM1,000.00', 'danger')
+            flash('Maximum top-up amount is RM1,000,000.00', 'danger')
             return redirect(url_for('wallet'))
 
         # In real application, this would integrate with payment gateway
