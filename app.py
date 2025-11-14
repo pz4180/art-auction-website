@@ -426,17 +426,25 @@ def process_payment(auction_id):
         flash('You are not authorized to make payment for this auction', 'danger')
         return redirect(url_for('dashboard'))
 
-    # In a real application, this would integrate with a payment gateway
-    # For now, we'll just mark the payment as complete
     payment_method = request.form.get('payment_method', 'credit_card')
 
-    # Mark payment as complete
-    success = db_manager.mark_payment_complete(auction_id, current_user.id)
-
-    if success:
-        flash(f'Payment completed successfully! Thank you for your purchase.', 'success')
+    # Handle wallet payment
+    if payment_method == 'wallet':
+        success, message = db_manager.process_wallet_payment(auction_id, current_user.id)
+        if success:
+            flash(message, 'success')
+        else:
+            flash(message, 'danger')
     else:
-        flash('There was an error processing your payment. Please try again.', 'danger')
+        # Handle other payment methods (credit card, PayPal, etc.)
+        # In real application, this would integrate with payment gateway
+        # For demo, we'll just mark the payment as complete
+        success = db_manager.mark_payment_complete(auction_id, current_user.id)
+
+        if success:
+            flash(f'Payment completed successfully! Thank you for your purchase.', 'success')
+        else:
+            flash('There was an error processing your payment. Please try again.', 'danger')
 
     return redirect(url_for('payment_center'))
 
@@ -456,8 +464,7 @@ def wallet():
 def wallet_topup():
     """Process wallet top-up"""
     try:
-        raw_amount = request.form.get('amount')
-        amount = Decimal(raw_amount)
+        amount = request.form.get('amount', type=float)
         payment_method = request.form.get('payment_method', 'card')
 
         if not amount or amount < 10:
@@ -478,13 +485,13 @@ def wallet_topup():
         )
 
         if success:
-            flash(f'Successfully added RM{amount} to your wallet!', 'success')
+            flash(f'Successfully added RM{amount:.2f} to your wallet!', 'success')
         else:
-            flash('Failed to top-up wallet.', 'danger')
+            flash('Failed to top-up wallet. Please run database migration: mysql -u root -p art_auction_db < add_wallet_system.sql', 'danger')
 
     except Exception as e:
         print(f"Error in wallet_topup: {e}")
-        flash(f'Database error: {e}', 'danger')
+        flash(f'Database error: {str(e)}. Please ensure wallet tables exist by running: add_wallet_system.sql', 'danger')
 
     return redirect(url_for('wallet'))
 
