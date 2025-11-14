@@ -659,9 +659,76 @@ class DatabaseManager:
                 cursor.close()
                 conn.close()
 
+    def get_pending_payments(self, user_id):
+        """Get auctions won by user that require payment"""
+        conn = self.get_connection()
+        if not conn:
+            return []
 
+        try:
+            cursor = conn.cursor(dictionary=True)
 
+            query = """SELECT a.*, u.username as seller_name, c.category_name,
+                      COALESCE(a.sold_price, a.current_bid) as final_price
+                      FROM auctions a
+                      JOIN users u ON a.seller_id = u.user_id
+                      LEFT JOIN categories c ON a.category_id = c.category_id
+                      WHERE a.winner_id = %s
+                      AND a.status IN ('completed', 'sold')
+                      AND (a.payment_status IS NULL OR a.payment_status = 'pending')
+                      ORDER BY a.end_time DESC"""
 
+            cursor.execute(query, (user_id,))
+            return cursor.fetchall()
+
+        except Error as e:
+            print(f"Error getting pending payments: {e}")
+            return []
+        finally:
+            if conn.is_connected():
+                cursor.close()
+                conn.close()
+
+    def mark_payment_complete(self, auction_id, user_id):
+        """Mark an auction payment as complete"""
+        conn = self.get_connection()
+        if not conn:
+            return False
+
+        try:
+            cursor = conn.cursor()
+
+            # Verify the user is the winner before allowing payment
+            cursor.execute("""UPDATE auctions
+                            SET payment_status = 'paid'
+                            WHERE auction_id = %s AND winner_id = %s""",
+                          (auction_id, user_id))
+
+            conn.commit()
+
+            if cursor.rowcount > 0:
+                # Notify seller that payment is received
+                cursor.execute("SELECT seller_id, title FROM auctions WHERE auction_id = %s",
+                             (auction_id,))
+                auction_info = cursor.fetchone()
+                if auction_info:
+                    self.create_notification(
+                        auction_info[0],
+                        f"Payment received for '{auction_info[1]}'",
+                        'won'
+                    )
+                return True
+            return False
+
+        except Error as e:
+            print(f"Error marking payment complete: {e}")
+            conn.rollback()
+            return False
+        finally:
+            if conn.is_connected():
+                cursor.close()
+                conn.close()
+                
 
 # Create a singleton instance
 db_manager = DatabaseManager()

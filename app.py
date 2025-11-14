@@ -162,21 +162,27 @@ def dashboard():
     
     # Get user's bids
     my_bids = db_manager.get_user_bids(current_user.id)
-    
+
     # Get won auctions
     won_auctions = db_manager.get_won_auctions(current_user.id)
-    
+
     # Get notifications
     notifications = db_manager.get_user_notifications(current_user.id)
-    
+
+    # Get pending payments count
+    pending_payments = db_manager.get_pending_payments(current_user.id)
+    pending_payments_count = len(pending_payments)
+
     # Mark notifications as read
     db_manager.mark_notifications_read(current_user.id)
-    
-    return render_template('dashboard.html', 
+
+    return render_template('dashboard.html',
                          my_auctions=my_auctions,
                          my_bids=my_bids,
                          won_auctions=won_auctions,
-                         notifications=notifications)
+                         notifications=notifications,
+                         pending_payments_count=pending_payments_count)
+
 
 @app.route('/create_auction', methods=['GET', 'POST'])
 @login_required
@@ -322,7 +328,7 @@ def sell_now(auction_id):
         # Notify winner
         db_manager.create_notification(
             user_id=highest_bid['bidder_id'],
-            message=f"You won '{auction['title']}'! Please complete your payment."
+            message=f"You won '{auction['title']}'!"
         )
         flash(message, "success")
     else:
@@ -330,6 +336,96 @@ def sell_now(auction_id):
 
     return redirect(url_for('dashboard'))
 
+
+@app.route('/payment')
+@login_required
+def payment_center():
+    """Payment center showing items that need payment"""
+    # Get pending payments
+    pending_payments = db_manager.get_pending_payments(current_user.id)
+
+    # Get completed payments (won auctions that are paid)
+    conn = db_manager.get_connection()
+    completed_payments = []
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            query = """SELECT a.*, u.username as seller_name, c.category_name,
+                      COALESCE(a.sold_price, a.current_bid) as final_price
+                      FROM auctions a
+                      JOIN users u ON a.seller_id = u.user_id
+                      LEFT JOIN categories c ON a.category_id = c.category_id
+                      WHERE a.winner_id = %s
+                      AND a.status IN ('completed', 'sold')
+                      AND a.payment_status = 'paid'
+                      ORDER BY a.end_time DESC
+                      LIMIT 10"""
+            cursor.execute(query, (current_user.id,))
+            completed_payments = cursor.fetchall()
+        except Exception as e:
+            print(f"Error getting completed payments: {e}")
+        finally:
+            if conn.is_connected():
+                cursor.close()
+                conn.close()
+
+    return render_template('payment.html',
+                         pending_payments=pending_payments,
+                         completed_payments=completed_payments)
+
+@app.route('/payment/<int:auction_id>')
+@login_required
+def payment_detail(auction_id):
+    """Show payment detail page for a specific auction"""
+    auction = db_manager.get_auction_by_id(auction_id)
+
+    if not auction:
+        flash('Auction not found', 'danger')
+        return redirect(url_for('payment_center'))
+
+    # Verify the user is the winner
+    if auction['winner_id'] != current_user.id:
+        flash('You are not authorized to make payment for this auction', 'danger')
+        return redirect(url_for('dashboard'))
+
+    # Check if already paid
+    if auction.get('payment_status') == 'paid':
+        flash('Payment has already been completed for this auction', 'info')
+        return redirect(url_for('payment_center'))
+
+    # Add final_price field
+    auction['final_price'] = auction.get('sold_price') or auction.get('current_bid')
+
+    return render_template('payment_detail.html', auction=auction)
+
+@app.route('/payment/<int:auction_id>/process', methods=['POST'])
+@login_required
+def process_payment(auction_id):
+    """Process payment for an auction"""
+    auction = db_manager.get_auction_by_id(auction_id)
+
+    if not auction:
+        flash('Auction not found', 'danger')
+        return redirect(url_for('payment_center'))
+
+    # Verify the user is the winner
+    if auction['winner_id'] != current_user.id:
+        flash('You are not authorized to make payment for this auction', 'danger')
+        return redirect(url_for('dashboard'))
+
+    # In a real application, this would integrate with a payment gateway
+    # For now, we'll just mark the payment as complete
+    payment_method = request.form.get('payment_method', 'credit_card')
+
+    # Mark payment as complete
+    success = db_manager.mark_payment_complete(auction_id, current_user.id)
+
+    if success:
+        flash(f'Payment completed successfully! Thank you for your purchase.', 'success')
+    else:
+        flash('There was an error processing your payment. Please try again.', 'danger')
+
+    return redirect(url_for('payment_center'))
 
 
 @app.route('/browse')
@@ -438,16 +534,26 @@ def auction_history():
     # Get user's past auctions (as seller)
     my_past_auctions = db_manager.get_user_auctions(current_user.id)
     
+    
     # Get user's bidding history
     my_bid_history = db_manager.get_user_bids(current_user.id)
-    
+
     # Get won auctions
     won_auctions = db_manager.get_won_auctions(current_user.id)
-    
+
+    # Calculate total spent (only paid auctions)
+    total_spent = sum(
+        (auction.get('sold_price') or auction.get('current_bid') or 0)
+        for auction in won_auctions
+        if auction.get('payment_status') == 'paid'
+    )
+
     return render_template('auction_history.html',
                          my_past_auctions=my_past_auctions,
                          my_bid_history=my_bid_history,
-                         won_auctions=won_auctions)
+                         won_auctions=won_auctions,
+                         total_spent=total_spent)
+
 
 @app.route('/api/notifications')
 @login_required
@@ -480,6 +586,62 @@ def not_found_error(error):
 @app.errorhandler(500)
 def internal_error(error):
     return render_template('500.html'), 500
+
+
+@app.route('/debug/payment-check')
+@login_required
+def debug_payment_check():
+    """Debug endpoint to check payment data"""
+    conn = db_manager.get_connection()
+    debug_info = {
+        'current_user_id': current_user.id,
+        'connection': 'Failed',
+        'columns': [],
+        'won_auctions_all': [],
+        'pending_payments': [],
+        'error': None
+    }
+
+    if conn:
+        debug_info['connection'] = 'Success'
+        try:
+            cursor = conn.cursor(dictionary=True)
+
+            # Check table columns
+            cursor.execute("DESCRIBE auctions")
+            debug_info['columns'] = [col['Field'] for col in cursor.fetchall()]
+
+            # Get all won auctions
+            cursor.execute("""
+                SELECT auction_id, title, status, winner_id,
+                       payment_status, sold_price, current_bid, end_time
+                FROM auctions
+                WHERE winner_id = %s
+                ORDER BY end_time DESC
+            """, (current_user.id,))
+            debug_info['won_auctions_all'] = cursor.fetchall()
+
+            # Get pending payments using the same query as get_pending_payments
+            cursor.execute("""
+                SELECT a.auction_id, a.title, a.status,
+                       a.payment_status, a.sold_price, a.current_bid,
+                       COALESCE(a.sold_price, a.current_bid) as final_price
+                FROM auctions a
+                WHERE a.winner_id = %s
+                AND a.status IN ('completed', 'sold')
+                AND (a.payment_status IS NULL OR a.payment_status = 'pending')
+                ORDER BY a.end_time DESC
+            """, (current_user.id,))
+            debug_info['pending_payments'] = cursor.fetchall()
+
+        except Exception as e:
+            debug_info['error'] = str(e)
+        finally:
+            if conn.is_connected():
+                cursor.close()
+                conn.close()
+
+    return jsonify(debug_info)
 
 # Template filters
 @app.template_filter('timeago')

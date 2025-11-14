@@ -149,7 +149,7 @@ body {
 
 .card-header {
     background: linear-gradient(135deg), var(--neutral-color);
-    color: var(--white);
+    color: var(--black);
     font-weight: bold;
     border: none;
 }
