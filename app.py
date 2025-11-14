@@ -649,7 +649,11 @@ def auction_history():
                          total_spent=total_spent)
 
     # Get total earned (as seller from paid auctions)
-    total_earned = db_manager.get_total_earned(current_user.id)
+    try:
+        total_earned = db_manager.get_total_earned(current_user.id)
+    except Exception as e:
+        print(f"Error getting total earned: {e}")
+        total_earned = 0.00  # Default if wallet_transactions table doesn't exist yet
 
     return render_template('auction_history.html',
                          my_past_auctions=my_past_auctions,
