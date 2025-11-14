@@ -191,19 +191,19 @@
                     {% for auction in won_auctions %}
                     <div class="col-md-6 col-lg-4 mb-4">
                         <div class="card h-100">
-                            <img src="{{ url_for('static', filename='uploads/' + auction.image_path) }}" 
+                            <img src="{{ url_for('static', filename='uploads/' + auction.image_path) }}"
                                  class="card-img-top" style="height: 200px; object-fit: cover;"
                                  alt="{{ auction.title }}"
                                  onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
-                            <div class="card-body">
+                            <div class="card-body d-flex flex-column">
                                 <h6 class="card-title">{{ auction.title }}</h6>
                                 <p class="text-muted small">
                                     <i class="bi bi-person"></i> From: {{ auction.seller_name }}
                                 </p>
-                                <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
                                     <div>
-                                        <p class="mb-0">Won for:</p>
-                                        <h5 class="text-success">{{ auction.current_bid|currency }}</h5>
+                                        <p class="mb-0 small text-muted">Won for:</p>
+                                        <h5 class="text-success mb-0">{{ (auction.sold_price or auction.current_bid)|currency }}</h5>
                                     </div>
                                     <div class="text-end">
                                         <small class="text-muted">
@@ -211,11 +211,39 @@
                                         </small>
                                     </div>
                                 </div>
-                                <hr>
-                                <a href="{{ url_for('auction_detail', auction_id=auction.auction_id) }}" 
-                                   class="btn btn-sm btn-outline-primary w-100">
-                                    <i class="bi bi-eye"></i> View Details
-                                </a>
+
+                                <!-- Payment Status -->
+                                <div class="mb-2">
+                                    {% if auction.payment_status == 'paid' %}
+                                        <span class="badge bg-success w-100 py-2">
+                                            <i class="bi bi-check-circle"></i> Payment Completed
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark w-100 py-2">
+                                            <i class="bi bi-exclamation-circle"></i> Payment Pending
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mt-auto">
+                                    <div class="d-grid gap-2">
+                                        {% if auction.payment_status == 'paid' %}
+                                            <a href="{{ url_for('auction_detail', auction_id=auction.auction_id) }}"
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye"></i> View Details
+                                            </a>
+                                        {% else %}
+                                            <a href="{{ url_for('payment_detail', auction_id=auction.auction_id) }}"
+                                               class="btn btn-sm btn-warning">
+                                                <i class="bi bi-credit-card"></i> Make Payment
+                                            </a>
+                                            <a href="{{ url_for('auction_detail', auction_id=auction.auction_id) }}"
+                                               class="btn btn-sm btn-outline-secondary">
+                                                <i class="bi bi-eye"></i> View Details
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -265,9 +293,8 @@
     <div class="col-md-3">
         <div class="card text-center">
             <div class="card-body">
-                {% set total_spent = won_auctions|map(attribute='current_bid')|sum %}
                 <h3 style="color: var(--neutral-color);">{{ total_spent|currency }}</h3>
-                <p class="text-muted">Total Spent</p>
+                <p class="text-muted">Total Spent (Paid)</p>
             </div>
         </div>
     </div>

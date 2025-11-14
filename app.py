@@ -531,17 +531,25 @@ def auction_history():
     """View user's auction history"""
     # Get user's past auctions (as seller)
     my_past_auctions = db_manager.get_user_auctions(current_user.id)
-    
+
     # Get user's bidding history
     my_bid_history = db_manager.get_user_bids(current_user.id)
-    
+
     # Get won auctions
     won_auctions = db_manager.get_won_auctions(current_user.id)
-    
+
+    # Calculate total spent (only paid auctions)
+    total_spent = sum(
+        (auction.get('sold_price') or auction.get('current_bid') or 0)
+        for auction in won_auctions
+        if auction.get('payment_status') == 'paid'
+    )
+
     return render_template('auction_history.html',
                          my_past_auctions=my_past_auctions,
                          my_bid_history=my_bid_history,
-                         won_auctions=won_auctions)
+                         won_auctions=won_auctions,
+                         total_spent=total_spent)
 
 @app.route('/api/notifications')
 @login_required
