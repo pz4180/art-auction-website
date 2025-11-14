@@ -459,30 +459,35 @@ def wallet():
 @login_required
 def wallet_topup():
     """Process wallet top-up"""
-    amount = request.form.get('amount', type=float)
-    payment_method = request.form.get('payment_method', 'card')
+    try:
+        amount = request.form.get('amount', type=float)
+        payment_method = request.form.get('payment_method', 'card')
 
-    if not amount or amount < 10:
-        flash('Minimum top-up amount is RM10.00', 'danger')
-        return redirect(url_for('wallet'))
+        if not amount or amount < 10:
+            flash('Minimum top-up amount is RM10.00', 'danger')
+            return redirect(url_for('wallet'))
 
-    if amount > 10000:
-        flash('Maximum top-up amount is RM10,000.00', 'danger')
-        return redirect(url_for('wallet'))
+        if amount > 10000:
+            flash('Maximum top-up amount is RM10,000.00', 'danger')
+            return redirect(url_for('wallet'))
 
-    # In real application, this would integrate with payment gateway
-    # For demo, we'll add funds immediately
-    success = db_manager.add_to_wallet(
-        current_user.id,
-        amount,
-        'top_up',
-        f'Wallet top-up via {payment_method}'
-    )
+        # In real application, this would integrate with payment gateway
+        # For demo, we'll add funds immediately
+        success = db_manager.add_to_wallet(
+            current_user.id,
+            amount,
+            'top_up',
+            f'Wallet top-up via {payment_method}'
+        )
 
-    if success:
-        flash(f'Successfully added {amount:.2f} to your wallet!', 'success')
-    else:
-        flash('Failed to top-up wallet. Please try again.', 'danger')
+        if success:
+            flash(f'Successfully added RM{amount:.2f} to your wallet!', 'success')
+        else:
+            flash('Failed to top-up wallet. Please run database migration: mysql -u root -p art_auction_db < add_wallet_system.sql', 'danger')
+
+    except Exception as e:
+        print(f"Error in wallet_topup: {e}")
+        flash(f'Database error: {str(e)}. Please ensure wallet tables exist by running: add_wallet_system.sql', 'danger')
 
     return redirect(url_for('wallet'))
 
