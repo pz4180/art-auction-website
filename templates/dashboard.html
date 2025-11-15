@@ -175,8 +175,8 @@
                     {% set auction_title = notif.message | regex_search("'([^']+)'") %}
 
                     {% if notif.type == 'won' and auction_id %}
-                        {# Won notification - link to pending payments #}
-                        <a href="{{ url_for('pending_payments') }}" class="list-group-item list-group-item-action" style="cursor: pointer;">
+                        {# Won notification - link to payment center #}
+                        <a href="{{ url_for('payment_center') }}" class="list-group-item list-group-item-action" style="cursor: pointer;">
                             <div class="d-flex w-100 justify-content-between">
                                 <div>
                                     <i class="bi bi-trophy text-success"></i>
