@@ -11,15 +11,15 @@
     </h1>
     <p class="lead text-muted">Discover, Bid, and Own Extraordinary Artworks</p>
     <div class="mt-4">
-        <a href="{{ url_for('browse_auctions') }}" class="btn btn-primary btn-lg me-3">
+        <a href="{{ url_for('browse_auctions') }}" class="btn btn-secondary btn-lg me-3">
             <i class="bi bi-search"></i> Browse Auctions
         </a>
         {% if current_user.is_authenticated %}
-        <a href="{{ url_for('create_auction') }}" class="btn btn-primary btn-lg">
+        <a href="{{ url_for('create_auction') }}" class="btn btn-secondary btn-lg">
             <i class="bi bi-plus-circle"></i> Start Selling
         </a>
         {% else %}
-        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
+        <a href="{{ url_for('register') }}" class="btn btn-secondary btn-lg">
             <i class="bi bi-person-plus"></i> Join Now
         </a>
         {% endif %}
@@ -239,6 +239,18 @@
     transform: translateY(-3px);
 }
 
+.explore-more-btn,
+.explore-more-btn:focus,
+.explore-more-btn:active,
+.explore-more-btn:focus-visible {
+    background: white !important;
+    color: #000000 !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+
 /* Hero Slider Styles */
 .hero-slider-container {
     position: relative;
@@ -402,6 +414,17 @@
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
+.discover-btn,
+.discover-btn:focus,
+.discover-btn:active,
+.discover-btn:focus-visible {
+    background: white !important;
+    color: var(--black) !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
 /* Navigation Arrows */
 .slider-arrow {
     position: absolute;
@@ -464,6 +487,46 @@
 .dot:hover {
     background: rgba(255,255,255,0.8);
 }
+
+.hero-btn {
+    background: white !important;
+    color: #000 !important;
+    border: none !important;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+/* Hover effect: word turns to EBCCA0 + underline appears */
+.hero-btn:hover {
+    color: #EBCCA0 !important;
+}
+
+.hero-btn::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -3px; /* adjust if needed */
+    width: 0;
+    height: 2px;
+    background-color: #EBCCA0;
+    transition: width 0.3s ease;
+}
+
+.hero-btn:hover::after {
+    width: 100%;
+}
+
+/* Remove focus/click color */
+.hero-btn:focus,
+.hero-btn:active,
+.hero-btn:focus-visible {
+    background: white !important;
+    color: #000 !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
 
 /* Responsive Design */
 @media (max-width: 768px) {

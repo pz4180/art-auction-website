@@ -27,6 +27,12 @@
     box-sizing: border-box;
 }
 
+html {
+
+    scroll-behavior: smooth;
+
+}
+
 body {
     font-family: 'Times New Roman', Times, serif, sans-serif;
     background-color: var(--light-color);
@@ -406,6 +412,15 @@ body {
     margin-bottom: 1rem;
 }
 
+.nav-tabs .nav-link {
+    color: #000 !important;       /* Normal tab text black */
+}
+
+.nav-tabs .nav-link.active {
+    color: #000 !important;       /* Active tab text black */
+    font-weight: 600;             /* Optional: make it a bit bolder */
+}
+
 /* Footer */
 .footer {
     background: linear-gradient(135deg, var(--dark-color), var(--primary-color));
@@ -517,6 +532,22 @@ body {
 
 .fade-in {
     animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes highlight {
+    0% {
+        background-color: transparent;
+    }
+    50% {
+        background-color: rgba(255, 193, 7, 0.2);
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
+.highlight-section {
+    animation: highlight 2s ease-in-out;
 }
 
 /* Custom Scrollbar */

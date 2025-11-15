@@ -58,11 +58,6 @@
                 <h5 class="mb-0"><i class="bi bi-credit-card"></i> Payment Method</h5>
             </div>
             <div class="card-body">
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle"></i>
-                    <strong>Demo Mode:</strong> This is a demonstration payment system.
-                </div>
-
                 <form method="POST" action="{{ url_for('process_payment', auction_id=auction.auction_id) }}" id="paymentForm">
                     <div class="mb-3">
                         <label class="form-label">Payment Method</label>
