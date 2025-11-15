@@ -84,6 +84,8 @@
                                 <td>
                                     {% if auction.status == 'active' %}
                                     <span class="badge bg-success">Active</span>
+                                    {% elif auction.status == 'sold' %}
+                                    <span class="badge bg-info"><i class="bi bi-lightning-fill"></i> Sold Immediately</span>
                                     {% elif auction.status == 'completed' %}
                                     <span class="badge bg-secondary">Completed</span>
                                     {% else %}
@@ -151,6 +153,12 @@
                                         <span class="badge bg-success">Winning</span>
                                         {% else %}
                                         <span class="badge bg-warning">Outbid</span>
+                                        {% endif %}
+                                    {% elif bid.status == 'sold' %}
+                                        {% if bid.is_winning %}
+                                        <span class="badge bg-info"><i class="bi bi-lightning-fill"></i> Sold Immediately</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Lost</span>
                                         {% endif %}
                                     {% elif bid.status == 'completed' %}
                                         {% if bid.is_winning %}
