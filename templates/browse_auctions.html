@@ -225,12 +225,5 @@ function setView(view) {
     // Implementation depends on your preference
     console.log('Switching to ' + view + ' view');
 }
-
-// Auto-submit form when filters change
-document.querySelectorAll('#filterForm select').forEach(select => {
-    select.addEventListener('change', function() {
-        document.getElementById('filterForm').submit();
-    });
-});
 </script>
 {% endblock %}
