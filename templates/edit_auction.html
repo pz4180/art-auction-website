@@ -25,47 +25,57 @@
         </div>
 
         <div class="mb-3">
-            <label>Auction Duration (days)</label>
-            <div class="d-flex gap-2 align-items-start">
-                <select class="form-select" id="duration_days" name="duration_days" disabled>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="mb-0">Auction Duration (days)</label>
+                <small class="text-muted">
+                    <i class="bi bi-clock"></i> Current time left: <strong>{{ auction.end_time|countdown }}</strong>
+                </small>
+            </div>
+
+            <button type="button" class="btn btn-outline-primary btn-sm" id="toggleDurationBtn" onclick="toggleDurationOptions()">
+                <i class="bi bi-calendar-event"></i> Change Duration
+            </button>
+
+            <div id="durationOptions" style="display: none;" class="mt-3">
+                <select class="form-select" id="duration_days" name="duration_days">
                     <option value="3" {% if current_duration == 3 %}selected{% endif %}>3 Days</option>
                     <option value="5" {% if current_duration == 5 %}selected{% endif %}>5 Days</option>
                     <option value="7" {% if current_duration == 7 %}selected{% endif %}>7 Days (Recommended)</option>
                     <option value="10" {% if current_duration == 10 %}selected{% endif %}>10 Days</option>
                     <option value="14" {% if current_duration == 14 %}selected{% endif %}>14 Days</option>
                 </select>
-                <button type="button" class="btn btn-warning" id="enableDurationBtn" onclick="enableDurationEdit()">
-                    <i class="bi bi-unlock"></i> Change Duration
-                </button>
+                <small class="form-text text-warning d-block mt-2">
+                    <i class="bi bi-exclamation-triangle"></i> Select a duration and click "Save Changes" to apply.
+                </small>
             </div>
-            <small class="form-text text-muted" id="durationHelpText">
-                Current duration: {{ current_duration }} days. Click "Change Duration" to modify.
-            </small>
         </div>
         <button type="submit" class="btn btn-primary">Save Changes</button>
-        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+        <a href="{{ url_for('auction_detail', auction_id=auction.auction_id) }}" class="btn btn-secondary">Cancel</a>
     </form>
 </div>
 
 <script>
-function enableDurationEdit() {
+const originalDuration = {{ current_duration }};
+
+function toggleDurationOptions() {
+    const durationOptions = document.getElementById('durationOptions');
+    const toggleButton = document.getElementById('toggleDurationBtn');
     const durationSelect = document.getElementById('duration_days');
-    const enableButton = document.getElementById('enableDurationBtn');
-    const helpText = document.getElementById('durationHelpText');
 
-    // Enable the dropdown
-    durationSelect.disabled = false;
-    durationSelect.classList.add('border-warning');
-    durationSelect.focus();
-
-    // Update the button
-    enableButton.classList.remove('btn-warning');
-    enableButton.classList.add('btn-success');
-    enableButton.innerHTML = '<i class="bi bi-check-circle"></i> Duration Unlocked';
-    enableButton.disabled = true;
-
-    // Update help text
-    helpText.innerHTML = '<strong class="text-warning">⚠️ Duration is now editable. Select a new duration to change the auction end time.</strong>';
+    if (durationOptions.style.display === 'none') {
+        // Show the duration options
+        durationOptions.style.display = 'block';
+        toggleButton.innerHTML = '<i class="bi bi-x-circle"></i> Cancel Changing';
+        toggleButton.classList.remove('btn-outline-primary');
+        toggleButton.classList.add('btn-danger');
+    } else {
+        // Hide the duration options and reset to original value
+        durationOptions.style.display = 'none';
+        durationSelect.value = originalDuration;
+        toggleButton.innerHTML = '<i class="bi bi-calendar-event"></i> Change Duration';
+        toggleButton.classList.remove('btn-danger');
+        toggleButton.classList.add('btn-outline-primary');
+    }
 }
 </script>
 
