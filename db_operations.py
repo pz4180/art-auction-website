@@ -435,20 +435,20 @@ class DatabaseManager:
                 cursor.close()
                 conn.close()
     
-    def get_user_notifications(self, user_id, unread_only=False):
+    def get_user_notifications(self, user_id, unread_only=False, limit=20):
         """Get notifications for a user"""
         conn = self.get_connection()
         if not conn:
             return []
-        
+
         try:
             cursor = conn.cursor(dictionary=True)
-            
+
             query = "SELECT * FROM notifications WHERE user_id = %s"
             if unread_only:
                 query += " AND is_read = FALSE"
-            query += " ORDER BY created_at DESC LIMIT 20"
-            
+            query += f" ORDER BY created_at DESC LIMIT {limit}"
+
             cursor.execute(query, (user_id,))
             return cursor.fetchall()
         
