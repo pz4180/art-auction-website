@@ -28,7 +28,7 @@ class User(UserMixin):
         self.id = user_data['user_id']
         self.username = user_data['username']
         self.email = user_data['email']
-        self.password = user_data.get('password')  # Needed for password verification
+        self.password_hash = user_data.get('password_hash')  # Needed for password verification
         self.created_at = user_data.get('created_at')
         # Shipping address fields
         self.full_name = user_data.get('full_name')
@@ -238,7 +238,7 @@ def change_username():
         return redirect(url_for('dashboard'))
 
     # Verify password
-    if not check_password_hash(current_user.password, password):
+    if not check_password_hash(current_user.password_hash, password):
         flash('Incorrect password. Username not changed.', 'danger')
         return redirect(url_for('dashboard'))
 
@@ -270,7 +270,7 @@ def change_password():
         return redirect(url_for('dashboard'))
 
     # Verify current password
-    if not check_password_hash(current_user.password, current_password):
+    if not check_password_hash(current_user.password_hash, current_password):
         flash('Current password is incorrect.', 'danger')
         return redirect(url_for('dashboard'))
 

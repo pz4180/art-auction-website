@@ -89,7 +89,7 @@ class DatabaseManager:
         try:
             cursor = conn.cursor(dictionary=True)
             query = """
-                SELECT user_id, username, email, password, created_at,
+                SELECT user_id, username, email, password_hash, created_at,
                        full_name, address_line1, address_line2, city, state,
                        postal_code, country, phone
                 FROM users WHERE user_id = %s
@@ -154,7 +154,7 @@ class DatabaseManager:
 
         try:
             cursor = conn.cursor()
-            query = "UPDATE users SET password = %s WHERE user_id = %s"
+            query = "UPDATE users SET password_hash = %s WHERE user_id = %s"
             cursor.execute(query, (hashed_password, user_id))
             conn.commit()
             return True
