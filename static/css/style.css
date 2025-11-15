@@ -1,7 +1,5 @@
 /* Art Auction Website - Custom Styles */
 /* Color Palette:
-   Primary: #7E3B21 (Dark Brown)
-   Secondary: #D99D76 (Light Brown)
    Accent: #EBCCA0 (Beige)
    Support: #848154 (Olive)
    Neutral: #C29E7B (Tan)
@@ -465,7 +463,7 @@ body {
 }
 
 .alert-info {
-    background: linear-gradient(135deg, #2196f3, #0d8aee);
+    background: linear-gradient(135deg, #bfbfbf, #bfbfbf);
     color: white;
 }
 

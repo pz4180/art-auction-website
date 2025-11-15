@@ -5,7 +5,7 @@
 {% block content %}
 <!-- Hero Section -->
 <div class="hero-section text-center py-5 mb-5 fade-in" style="background: linear-gradient(135deg, rgba(126,59,33,0.1), rgba(217,157,118,0.1)); border-radius: 15px;">
-    <h1 class="display-4 fw-bold" style="color: var(--primary-color);">
+    <h1 class="display-4 fw-bold">
         Welcome to MuseBid
         <link rel="icon" href="data:,">
     </h1>
@@ -15,11 +15,11 @@
             <i class="bi bi-search"></i> Browse Auctions
         </a>
         {% if current_user.is_authenticated %}
-        <a href="{{ url_for('create_auction') }}" class="btn btn-outline-primary btn-lg">
+        <a href="{{ url_for('create_auction') }}" class="btn btn-primary btn-lg">
             <i class="bi bi-plus-circle"></i> Start Selling
         </a>
         {% else %}
-        <a href="{{ url_for('register') }}" class="btn btn-secondary btn-lg">
+        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
             <i class="bi bi-person-plus"></i> Join Now
         </a>
         {% endif %}
@@ -94,10 +94,10 @@
 
 <!-- Featured Auctions -->
 <div class="section-header mb-4">
-    <h2 class="h3" style="color: var(--primary-color);">
+    <h2 class="h3">
         <i class="bi bi-fire"></i> Featured Auctions
     </h2>
-    <hr style="border-color: var(--secondary-color); width: 100px;">
+    <hr style="width: 100px;">
 </div>
 
 <div class="row">
@@ -153,17 +153,17 @@
 
 <!-- Categories Section -->
 <div class="section-header mb-4 mt-5">
-    <h2 class="h3" style="color: var(--primary-color);">
+    <h2 class="h3">
         </i> Browse by Category
     </h2>
-    <hr style="border-color: var(--secondary-color); width: 100px;">
+    <hr style="width: 100px;">
 </div>
 
 <div class="row">
     <div class="col-6 col-md-4 col-lg-2 mb-3">
         <a href="{{ url_for('browse_auctions', category=1) }}" class="text-decoration-none">
             <div class="card text-center py-3 category-card">
-                <i class="bi bi-brush h1" style="color: var(--primary-color);"></i>
+                <i class="bi bi-brush h1"></i>
                 <p class="mb-0">Paintings</p>
             </div>
         </a>
@@ -171,7 +171,7 @@
     <div class="col-6 col-md-4 col-lg-2 mb-3">
         <a href="{{ url_for('browse_auctions', category=2) }}" class="text-decoration-none">
             <div class="card text-center py-3 category-card">
-                <i class="bi bi-box h1" style="color: var(--primary-color);"></i>
+                <i class="bi bi-box h1"></i>
                 <p class="mb-0">Sculptures</p>
             </div>
         </a>
@@ -179,7 +179,7 @@
     <div class="col-6 col-md-4 col-lg-2 mb-3">
         <a href="{{ url_for('browse_auctions', category=3) }}" class="text-decoration-none">
             <div class="card text-center py-3 category-card">
-                <i class="bi bi-camera h1" style="color: var(--primary-color);"></i>
+                <i class="bi bi-camera h1"></i>
                 <p class="mb-0">Photography</p>
             </div>
         </a>
@@ -187,7 +187,7 @@
     <div class="col-6 col-md-4 col-lg-2 mb-3">
         <a href="{{ url_for('browse_auctions', category=4) }}" class="text-decoration-none">
             <div class="card text-center py-3 category-card">
-                <i class="bi bi-laptop h1" style="color: var(--primary-color);"></i>
+                <i class="bi bi-laptop h1"></i>
                 <p class="mb-0">Digital Art</p>
             </div>
         </a>
@@ -195,7 +195,7 @@
     <div class="col-6 col-md-4 col-lg-2 mb-3">
         <a href="{{ url_for('browse_auctions', category=5) }}" class="text-decoration-none">
             <div class="card text-center py-3 category-card">
-                <i class="bi bi-layers h1" style="color: var(--primary-color);"></i>
+                <i class="bi bi-layers h1"></i>
                 <p class="mb-0">Mixed Media</p>
             </div>
         </a>
@@ -203,7 +203,7 @@
     <div class="col-6 col-md-4 col-lg-2 mb-3">
         <a href="{{ url_for('browse_auctions', category=6) }}" class="text-decoration-none">
             <div class="card text-center py-3 category-card">
-                <i class="bi bi-three-dots h1" style="color: var(--primary-color);"></i>
+                <i class="bi bi-three-dots h1"></i>
                 <p class="mb-0">Other</p>
             </div>
         </a>
@@ -419,7 +419,6 @@
     z-index: 10;
     transition: all 0.3s ease;
     font-size: 1.5rem;
-    color: var(--primary-color);
 }
 
 .slider-arrow:hover {

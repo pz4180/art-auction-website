@@ -32,7 +32,7 @@
                 </small>
             </div>
 
-            <button type="button" class="btn btn-outline-primary btn-sm" id="toggleDurationBtn" onclick="toggleDurationOptions()">
+            <button type="button" class="btn btn-secondary btn-sm" id="toggleDurationBtn" onclick="toggleDurationOptions()">
                 <i class="bi bi-calendar-event"></i> Change Duration
             </button>
 
@@ -49,7 +49,7 @@
                 </small>
             </div>
         </div>
-        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <button type="submit" class="btn btn-secondary">Save Changes</button>
         <a href="{{ url_for('auction_detail', auction_id=auction.auction_id) }}" class="btn btn-secondary">Cancel</a>
     </form>
 </div>
@@ -66,7 +66,7 @@ function toggleDurationOptions() {
         // Show the duration options
         durationOptions.style.display = 'block';
         toggleButton.innerHTML = '<i class="bi bi-x-circle"></i> Cancel Changing';
-        toggleButton.classList.remove('btn-outline-primary');
+        toggleButton.classList.remove('btn-secondary');
         toggleButton.classList.add('btn-danger');
     } else {
         // Hide the duration options and reset to original value
@@ -74,7 +74,7 @@ function toggleDurationOptions() {
         durationSelect.value = originalDuration;
         toggleButton.innerHTML = '<i class="bi bi-calendar-event"></i> Change Duration';
         toggleButton.classList.remove('btn-danger');
-        toggleButton.classList.add('btn-outline-primary');
+        toggleButton.classList.add('btn-secondary');
     }
 }
 </script>
