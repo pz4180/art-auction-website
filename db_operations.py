@@ -136,15 +136,15 @@ class DatabaseManager:
     
     def get_active_auctions(self, category_id=None, min_price=None, max_price=None,
                         search_term=None, limit=20, offset=0,
-                        sort_by="end_time", order="ASC"):
+                        sort_by="end_time", order="ASC", random_order=False):
         """Get list of active auctions with filters"""
         conn = self.get_connection()
         if not conn:
             return []
-        
+
         try:
             cursor = conn.cursor(dictionary=True)
-            
+
             query = """SELECT a.*, u.username as seller_name, c.category_name,
                       COUNT(DISTINCT b.bidder_id) as bid_count,
                       COALESCE(MAX(b.bid_amount), a.starting_bid) as current_bid
@@ -153,27 +153,31 @@ class DatabaseManager:
                       LEFT JOIN categories c ON a.category_id = c.category_id
                       LEFT JOIN bids b ON a.auction_id = b.auction_id
                       WHERE a.status = 'active' AND a.end_time > NOW()"""
-            
+
             params = []
-            
+
             if category_id:
                 query += " AND a.category_id = %s"
                 params.append(category_id)
-            
+
             if min_price:
                 query += " AND COALESCE(a.current_bid, a.starting_bid) >= %s"
                 params.append(min_price)
-            
+
             if max_price:
                 query += " AND COALESCE(a.current_bid, a.starting_bid) <= %s"
                 params.append(max_price)
-            
+
             if search_term:
                 query += " AND (a.title LIKE %s OR a.description LIKE %s)"
                 search_pattern = f"%{search_term}%"
                 params.extend([search_pattern, search_pattern])
-            
-            query += f" GROUP BY a.auction_id ORDER BY {sort_by} {order} LIMIT %s OFFSET %s"
+
+            # Add ORDER BY clause
+            if random_order:
+                query += " GROUP BY a.auction_id ORDER BY RAND() LIMIT %s OFFSET %s"
+            else:
+                query += f" GROUP BY a.auction_id ORDER BY {sort_by} {order} LIMIT %s OFFSET %s"
             params.extend([limit, offset])
   
             cursor.execute(query, params)
