@@ -28,7 +28,17 @@ class User(UserMixin):
         self.id = user_data['user_id']
         self.username = user_data['username']
         self.email = user_data['email']
+        self.password = user_data.get('password')  # Needed for password verification
         self.created_at = user_data.get('created_at')
+        # Shipping address fields
+        self.full_name = user_data.get('full_name')
+        self.address_line1 = user_data.get('address_line1')
+        self.address_line2 = user_data.get('address_line2')
+        self.city = user_data.get('city')
+        self.state = user_data.get('state')
+        self.postal_code = user_data.get('postal_code')
+        self.country = user_data.get('country')
+        self.phone = user_data.get('phone')
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -171,7 +181,7 @@ def dashboard():
     """User dashboard showing their auctions, bids, and notifications"""
     # Get user's auctions
     my_auctions = db_manager.get_user_auctions(current_user.id)
-    
+
     # Get user's bids
     my_bids = db_manager.get_user_bids(current_user.id)
 
@@ -185,6 +195,21 @@ def dashboard():
     pending_payments = db_manager.get_pending_payments(current_user.id)
     pending_payments_count = len(pending_payments)
 
+    # Calculate total spent (sum of all paid won auctions)
+    total_spent_raw = sum(
+        Decimal(str(auction.get('sold_price', 0) or auction.get('current_bid', 0)))
+        for auction in won_auctions
+        if auction.get('payment_status') == 'paid'
+    )
+    total_spent = Decimal(str(total_spent_raw))
+
+    # Calculate total earned (from sales)
+    try:
+        total_earned = db_manager.get_total_earned(current_user.id)
+        total_earned = Decimal(str(total_earned))
+    except:
+        total_earned = Decimal("0.00")
+
     # Mark notifications as read
     db_manager.mark_notifications_read(current_user.id)
 
@@ -193,7 +218,115 @@ def dashboard():
                          my_bids=my_bids,
                          won_auctions=won_auctions,
                          notifications=notifications,
-                         pending_payments_count=pending_payments_count)
+                         pending_payments_count=pending_payments_count,
+                         total_spent=total_spent,
+                         total_earned=total_earned)
+
+
+# ===============================
+# 👤 Account Management Routes
+# ===============================
+@app.route('/change_username', methods=['POST'])
+@login_required
+def change_username():
+    """Allow user to change their username"""
+    new_username = request.form.get('new_username')
+    password = request.form.get('password')
+
+    if not new_username or not password:
+        flash('Please provide both username and password.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    # Verify password
+    if not check_password_hash(current_user.password, password):
+        flash('Incorrect password. Username not changed.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    # Check if username already exists
+    if db_manager.get_user_by_username(new_username):
+        flash('Username already taken. Please choose a different username.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    # Update username
+    success = db_manager.update_username(current_user.id, new_username)
+    if success:
+        flash('Username updated successfully!', 'success')
+    else:
+        flash('Failed to update username. Please try again.', 'danger')
+
+    return redirect(url_for('dashboard'))
+
+
+@app.route('/change_password', methods=['POST'])
+@login_required
+def change_password():
+    """Allow user to change their password"""
+    current_password = request.form.get('current_password')
+    new_password = request.form.get('new_password')
+    confirm_new_password = request.form.get('confirm_new_password')
+
+    if not all([current_password, new_password, confirm_new_password]):
+        flash('Please fill in all password fields.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    # Verify current password
+    if not check_password_hash(current_user.password, current_password):
+        flash('Current password is incorrect.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    # Verify new passwords match
+    if new_password != confirm_new_password:
+        flash('New passwords do not match.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    # Update password
+    hashed_password = generate_password_hash(new_password)
+    success = db_manager.update_password(current_user.id, hashed_password)
+
+    if success:
+        flash('Password updated successfully!', 'success')
+    else:
+        flash('Failed to update password. Please try again.', 'danger')
+
+    return redirect(url_for('dashboard'))
+
+
+@app.route('/update_shipping_address', methods=['POST'])
+@login_required
+def update_shipping_address():
+    """Allow user to update their shipping address"""
+    full_name = request.form.get('full_name')
+    address_line1 = request.form.get('address_line1')
+    address_line2 = request.form.get('address_line2', '')
+    city = request.form.get('city')
+    state = request.form.get('state')
+    postal_code = request.form.get('postal_code')
+    country = request.form.get('country')
+    phone = request.form.get('phone')
+
+    if not all([full_name, address_line1, city, state, postal_code, country, phone]):
+        flash('Please fill in all required fields.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    # Update shipping address
+    success = db_manager.update_shipping_address(
+        user_id=current_user.id,
+        full_name=full_name,
+        address_line1=address_line1,
+        address_line2=address_line2,
+        city=city,
+        state=state,
+        postal_code=postal_code,
+        country=country,
+        phone=phone
+    )
+
+    if success:
+        flash('Shipping address updated successfully!', 'success')
+    else:
+        flash('Failed to update shipping address. Please try again.', 'danger')
+
+    return redirect(url_for('dashboard'))
 
 
 @app.route('/create_auction', methods=['GET', 'POST'])

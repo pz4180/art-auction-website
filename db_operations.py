@@ -85,13 +85,18 @@ class DatabaseManager:
         conn = self.get_connection()
         if not conn:
             return None
-        
+
         try:
             cursor = conn.cursor(dictionary=True)
-            query = "SELECT user_id, username, email, created_at FROM users WHERE user_id = %s"
+            query = """
+                SELECT user_id, username, email, password, created_at,
+                       full_name, address_line1, address_line2, city, state,
+                       postal_code, country, phone
+                FROM users WHERE user_id = %s
+            """
             cursor.execute(query, (user_id,))
             return cursor.fetchone()
-        
+
         except Error as e:
             print(f"Error getting user: {e}")
             return None
@@ -99,7 +104,97 @@ class DatabaseManager:
             if conn.is_connected():
                 cursor.close()
                 conn.close()
-    
+
+    def get_user_by_username(self, username):
+        """Get user information by username"""
+        conn = self.get_connection()
+        if not conn:
+            return None
+
+        try:
+            cursor = conn.cursor(dictionary=True)
+            query = "SELECT user_id, username, email FROM users WHERE username = %s"
+            cursor.execute(query, (username,))
+            return cursor.fetchone()
+
+        except Error as e:
+            print(f"Error getting user by username: {e}")
+            return None
+        finally:
+            if conn.is_connected():
+                cursor.close()
+                conn.close()
+
+    def update_username(self, user_id, new_username):
+        """Update user's username"""
+        conn = self.get_connection()
+        if not conn:
+            return False
+
+        try:
+            cursor = conn.cursor()
+            query = "UPDATE users SET username = %s WHERE user_id = %s"
+            cursor.execute(query, (new_username, user_id))
+            conn.commit()
+            return True
+
+        except Error as e:
+            print(f"Error updating username: {e}")
+            return False
+        finally:
+            if conn.is_connected():
+                cursor.close()
+                conn.close()
+
+    def update_password(self, user_id, hashed_password):
+        """Update user's password"""
+        conn = self.get_connection()
+        if not conn:
+            return False
+
+        try:
+            cursor = conn.cursor()
+            query = "UPDATE users SET password = %s WHERE user_id = %s"
+            cursor.execute(query, (hashed_password, user_id))
+            conn.commit()
+            return True
+
+        except Error as e:
+            print(f"Error updating password: {e}")
+            return False
+        finally:
+            if conn.is_connected():
+                cursor.close()
+                conn.close()
+
+    def update_shipping_address(self, user_id, full_name, address_line1, address_line2,
+                                city, state, postal_code, country, phone):
+        """Update user's shipping address"""
+        conn = self.get_connection()
+        if not conn:
+            return False
+
+        try:
+            cursor = conn.cursor()
+            query = """
+                UPDATE users
+                SET full_name = %s, address_line1 = %s, address_line2 = %s,
+                    city = %s, state = %s, postal_code = %s, country = %s, phone = %s
+                WHERE user_id = %s
+            """
+            cursor.execute(query, (full_name, address_line1, address_line2,
+                                  city, state, postal_code, country, phone, user_id))
+            conn.commit()
+            return True
+
+        except Error as e:
+            print(f"Error updating shipping address: {e}")
+            return False
+        finally:
+            if conn.is_connected():
+                cursor.close()
+                conn.close()
+
     # Auction Management Functions
     def create_auction(self, seller_id, title, description, image_path, category_id, 
                       starting_bid, duration_days=7):
