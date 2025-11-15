@@ -587,16 +587,40 @@ class DatabaseManager:
                 cursor.close()
                 conn.close()
 
-    def update_auction_info(self, auction_id, title, description, category_id, duration_days):
+    def update_auction_info(self, auction_id, title, description, category_id, duration_days, original_end_time):
         try:
             conn = self.get_connection()
             cur = conn.cursor()
-            end_time = datetime.now() + timedelta(days=duration_days)
+
+            # Get current auction to calculate original duration
             cur.execute("""
-                UPDATE auctions
-                SET title=%s, description=%s, category_id=%s, end_time=%s
-                WHERE auction_id=%s
-            """, (title, description, category_id, end_time, auction_id))
+                SELECT end_time, created_at FROM auctions WHERE auction_id=%s
+            """, (auction_id,))
+            current = cur.fetchone()
+
+            if current:
+                current_end_time = current[0]
+                created_at = current[1]
+                # Calculate the original duration in days
+                original_duration = (current_end_time - created_at).days
+
+                # Only update end_time if duration has changed
+                if duration_days != original_duration:
+                    # Recalculate end_time from now
+                    end_time = datetime.now() + timedelta(days=duration_days)
+                    cur.execute("""
+                        UPDATE auctions
+                        SET title=%s, description=%s, category_id=%s, end_time=%s
+                        WHERE auction_id=%s
+                    """, (title, description, category_id, end_time, auction_id))
+                else:
+                    # Keep original end_time, only update other fields
+                    cur.execute("""
+                        UPDATE auctions
+                        SET title=%s, description=%s, category_id=%s
+                        WHERE auction_id=%s
+                    """, (title, description, category_id, auction_id))
+
             conn.commit()
             cur.close()
             conn.close()
@@ -604,7 +628,6 @@ class DatabaseManager:
         except Exception as e:
             print("Error updating auction:", e)
             return False
-
 
     def delete_auction(self, auction_id):
         try:

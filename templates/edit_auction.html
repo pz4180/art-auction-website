@@ -26,15 +26,47 @@
 
         <div class="mb-3">
             <label>Auction Duration (days)</label>
-                <select class="form-select" id="duration_days" name="duration_days">
-                    <option value="3">3 Days</option>
-                    <option value="5">5 Days</option>
-                    <option value="7" selected>7 Days (Recommended)</option>
-                    <option value="10">10 Days</option>
-                    <option value="14">14 Days</option>
+            <div class="d-flex gap-2 align-items-start">
+                <select class="form-select" id="duration_days" name="duration_days" disabled>
+                    <option value="3" {% if current_duration == 3 %}selected{% endif %}>3 Days</option>
+                    <option value="5" {% if current_duration == 5 %}selected{% endif %}>5 Days</option>
+                    <option value="7" {% if current_duration == 7 %}selected{% endif %}>7 Days (Recommended)</option>
+                    <option value="10" {% if current_duration == 10 %}selected{% endif %}>10 Days</option>
+                    <option value="14" {% if current_duration == 14 %}selected{% endif %}>14 Days</option>
                 </select>
+                <button type="button" class="btn btn-warning" id="enableDurationBtn" onclick="enableDurationEdit()">
+                    <i class="bi bi-unlock"></i> Change Duration
+                </button>
+            </div>
+            <small class="form-text text-muted" id="durationHelpText">
+                Current duration: {{ current_duration }} days. Click "Change Duration" to modify.
+            </small>
+        </div>
         <button type="submit" class="btn btn-primary">Save Changes</button>
         <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
     </form>
 </div>
+
+<script>
+function enableDurationEdit() {
+    const durationSelect = document.getElementById('duration_days');
+    const enableButton = document.getElementById('enableDurationBtn');
+    const helpText = document.getElementById('durationHelpText');
+
+    // Enable the dropdown
+    durationSelect.disabled = false;
+    durationSelect.classList.add('border-warning');
+    durationSelect.focus();
+
+    // Update the button
+    enableButton.classList.remove('btn-warning');
+    enableButton.classList.add('btn-success');
+    enableButton.innerHTML = '<i class="bi bi-check-circle"></i> Duration Unlocked';
+    enableButton.disabled = true;
+
+    // Update help text
+    helpText.innerHTML = '<strong class="text-warning">⚠️ Duration is now editable. Select a new duration to change the auction end time.</strong>';
+}
+</script>
+
 {% endblock %}

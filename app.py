@@ -265,6 +265,12 @@ def edit_auction(auction_id):
 
     categories = db_manager.get_categories()
 
+    # Calculate current duration for the form
+    if auction['end_time'] and auction['created_at']:
+        current_duration = (auction['end_time'] - auction['created_at']).days
+    else:
+        current_duration = 7  # default
+
     if request.method == 'POST':
         title = request.form.get('title')
         description = request.form.get('description')
@@ -279,7 +285,8 @@ def edit_auction(auction_id):
                 title=title,
                 description=description,
                 category_id=category_id,
-                duration_days=duration_days
+                duration_days=duration_days,
+                original_end_time=auction['end_time']
             )
             if success:
                 flash('Auction updated successfully!', 'success')
@@ -287,7 +294,7 @@ def edit_auction(auction_id):
             else:
                 flash('Failed to update auction.', 'danger')
 
-    return render_template('edit_auction.html', auction=auction, categories=categories)
+    return render_template('edit_auction.html', auction=auction, categories=categories, current_duration=current_duration)
 
 
 # ===============================
