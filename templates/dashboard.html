@@ -187,7 +187,7 @@
                         </a>
                     {% elif notif.type == 'new_auction' and auction_title %}
                         {# New auction notification - link to browse with search #}
-                        <a href="{{ url_for('browse') }}?search={{ auction_title | urlencode }}" class="list-group-item list-group-item-action" style="cursor: pointer;">
+                        <a href="{{ url_for('browse_auctions') }}?search={{ auction_title | urlencode }}" class="list-group-item list-group-item-action" style="cursor: pointer;">
                             <div class="d-flex w-100 justify-content-between">
                                 <div>
                                     <i class="bi bi-info-circle text-info"></i>
@@ -198,7 +198,7 @@
                         </a>
                     {% elif notif.type == 'outbid' and auction_title %}
                         {# Outbid notification - link to browse with search to find the auction #}
-                        <a href="{{ url_for('browse') }}?search={{ auction_title | urlencode }}" class="list-group-item list-group-item-action" style="cursor: pointer;">
+                        <a href="{{ url_for('browse_auctions') }}?search={{ auction_title | urlencode }}" class="list-group-item list-group-item-action" style="cursor: pointer;">
                             <div class="d-flex w-100 justify-content-between">
                                 <div>
                                     <i class="bi bi-exclamation-circle text-warning"></i>
