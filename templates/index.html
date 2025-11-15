@@ -144,13 +144,12 @@
     {% endfor %}
 </div>
 
-{% if auctions|length > 6 %}
-<div class="text-center mt-4">
-    <a href="{{ url_for('browse_auctions') }}" class="btn btn-primary btn-lg">
-        View All Auctions <i class="bi bi-arrow-right"></i>
+<!-- Explore More Button -->
+<div class="text-center mt-4 mb-5">
+    <a href="{{ url_for('browse_auctions') }}" class="btn btn-primary btn-lg explore-more-btn">
+        <i class="bi bi-compass"></i> Explore More
     </a>
 </div>
-{% endif %}
 
 <!-- Categories Section -->
 <div class="section-header mb-4 mt-5">
@@ -222,6 +221,21 @@
     transform: translateY(-5px);
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     background: var(--accent-color);
+}
+
+/* Explore More Button */
+.explore-more-btn {
+    padding: 1rem 3rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(126,59,33,0.3);
+}
+
+.explore-more-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(126,59,33,0.4);
 }
 
 /* Hero Slider Styles */

@@ -91,7 +91,8 @@ def contact():
 @app.route('/')
 def index():
     """Home page showing featured auctions"""
-    auctions = db_manager.get_active_auctions(limit=6)
+    # Get random auctions for featured section
+    auctions = db_manager.get_active_auctions(limit=6, random_order=True)
     # Get random auctions for hero slider (5 slides)
     slider_auctions = db_manager.get_active_auctions(limit=5, random_order=True)
     if current_user.is_authenticated:
