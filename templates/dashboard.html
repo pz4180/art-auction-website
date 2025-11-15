@@ -156,7 +156,7 @@
 </div>
 
 <!-- Recent Notifications -->
-<div class="row">
+<div class="row" id="notifications">
     <div class="col-12">
         <div class="card">
             <div class="card-header">
@@ -269,4 +269,27 @@
 </div>
 {% endif %}
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Scroll to and highlight notification section if hash is present
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.location.hash === '#notifications') {
+            const notificationSection = document.getElementById('notifications');
+            if (notificationSection) {
+                // Small delay to ensure smooth scroll completes
+                setTimeout(function() {
+                    notificationSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    notificationSection.classList.add('highlight-section');
+
+                    // Remove the highlight class after animation completes
+                    setTimeout(function() {
+                        notificationSection.classList.remove('highlight-section');
+                    }, 2000);
+                }, 100);
+            }
+        }
+    });
+</script>
 {% endblock %}

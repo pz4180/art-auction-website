@@ -29,6 +29,10 @@
     box-sizing: border-box;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
     font-family: 'Times New Roman', Times, serif, sans-serif;
     background-color: var(--light-color);
@@ -519,6 +523,22 @@ body {
 
 .fade-in {
     animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes highlight {
+    0% {
+        background-color: transparent;
+    }
+    50% {
+        background-color: rgba(255, 193, 7, 0.2);
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
+.highlight-section {
+    animation: highlight 2s ease-in-out;
 }
 
 /* Custom Scrollbar */
