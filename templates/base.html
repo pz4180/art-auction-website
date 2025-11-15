@@ -187,20 +187,25 @@
     <script>
         // Check for new notifications periodically
         function checkNotifications() {
-            fetch('/api/notifications')
+            fetch('/api/notifications?limit=5')
                 .then(response => response.json())
                 .then(data => {
                     const badge = document.getElementById('notificationCount');
                     const list = document.getElementById('notificationList');
-                    
-                    if (data.count > 0) {
+
+                    // Show unread count in badge
+                    if (data.unread_count > 0) {
                         badge.style.display = 'inline-block';
-                        badge.textContent = data.count;
-                        
-                        // Update notification dropdown
-                        let html = '<li><h6 class="dropdown-header">Notifications</h6></li>';
+                        badge.textContent = data.unread_count;
+                    } else {
+                        badge.style.display = 'none';
+                    }
+
+                    // Always show latest 5 notifications (even if read)
+                    if (data.notifications.length > 0) {
+                        let html = '<li><h6 class="dropdown-header">Recent Notifications</h6></li>';
                         html += '<li><hr class="dropdown-divider"></li>';
-                        
+
                         data.notifications.forEach(notif => {
                             html += `<li class="dropdown-item small">
                                 <div class="notification-item">
@@ -209,14 +214,17 @@
                                 </div>
                             </li>`;
                         });
-                        
+
+                        html += '<li><hr class="dropdown-divider"></li>';
+                        html += '<li><a class="dropdown-item text-center small" href="/dashboard"><i class="bi bi-arrow-right"></i> View All</a></li>';
+
                         list.innerHTML = html;
                     } else {
-                        badge.style.display = 'none';
+                        list.innerHTML = '<li><h6 class="dropdown-header">Notifications</h6></li><li><hr class="dropdown-divider"></li><li class="dropdown-item">No notifications</li>';
                     }
                 });
         }
-        
+
         function getNotificationIcon(type) {
             const icons = {
                 'outbid': 'exclamation-circle text-warning',
@@ -226,14 +234,18 @@
             };
             return icons[type] || 'bell';
         }
-        
+
         // Check notifications on page load and every 30 seconds
         checkNotifications();
         setInterval(checkNotifications, 30000);
-        
+
         // Mark notifications as read when dropdown is opened
         document.getElementById('notificationDropdown').addEventListener('click', function() {
-            fetch('/api/mark_notifications_read', {method: 'POST'});
+            fetch('/api/mark_notifications_read', {method: 'POST'})
+                .then(() => {
+                    // Refresh notification list after marking as read
+                    setTimeout(checkNotifications, 500);
+                });
         });
     </script>
     {% endif %}

@@ -674,10 +674,18 @@ def auction_history():
 @login_required
 def get_notifications():
     """API endpoint to get user notifications"""
-    notifications = db_manager.get_user_notifications(current_user.id, unread_only=True)
+    limit = request.args.get('limit', 20, type=int)
+
+    # Get all notifications (read and unread) with limit
+    all_notifications = db_manager.get_user_notifications(current_user.id, unread_only=False, limit=limit)
+
+    # Get count of unread notifications
+    unread_notifications = db_manager.get_user_notifications(current_user.id, unread_only=True)
+
     return jsonify({
-        'count': len(notifications),
-        'notifications': notifications
+        'count': len(all_notifications),
+        'unread_count': len(unread_notifications),
+        'notifications': all_notifications
     })
 
 @app.route('/api/mark_notifications_read', methods=['POST'])
@@ -819,6 +827,13 @@ def countdown_filter(dt):
 def currency_filter(value):
     """Format value as currency"""
     return f"${value:,.2f}" if value else "$0.00"
+
+@app.template_filter('regex_search')
+def regex_search_filter(text, pattern):
+    """Extract text using regex pattern"""
+    import re
+    match = re.search(pattern, text)
+    return match.group(1) if match else None
 
 # Background task to close expired auctions (run this periodically)
 def close_expired_auctions_task():

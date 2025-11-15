@@ -171,15 +171,54 @@
                 {% if notifications %}
                 <div class="list-group">
                     {% for notif in notifications[:10] %}
-                    <div class="list-group-item">
-                        <div class="d-flex w-100 justify-content-between">
-                            <div>
-                                <i class="bi bi-{{ 'exclamation-circle text-warning' if notif.type == 'outbid' else 'trophy text-success' if notif.type == 'won' else 'info-circle text-info' }}"></i>
-                                {{ notif.message }}
+                    {% set auction_id = notif.message | regex_search('#(\\d+)') %}
+                    {% set auction_title = notif.message | regex_search("'([^']+)'") %}
+
+                    {% if notif.type == 'won' and auction_id %}
+                        {# Won notification - link to pending payments #}
+                        <a href="{{ url_for('pending_payments') }}" class="list-group-item list-group-item-action" style="cursor: pointer;">
+                            <div class="d-flex w-100 justify-content-between">
+                                <div>
+                                    <i class="bi bi-trophy text-success"></i>
+                                    {{ notif.message }}
+                                </div>
+                                <small class="text-muted">{{ notif.created_at|timeago }}</small>
                             </div>
-                            <small class="text-muted">{{ notif.created_at|timeago }}</small>
+                        </a>
+                    {% elif notif.type == 'new_auction' and auction_title %}
+                        {# New auction notification - link to browse with search #}
+                        <a href="{{ url_for('browse') }}?search={{ auction_title | urlencode }}" class="list-group-item list-group-item-action" style="cursor: pointer;">
+                            <div class="d-flex w-100 justify-content-between">
+                                <div>
+                                    <i class="bi bi-info-circle text-info"></i>
+                                    {{ notif.message }}
+                                </div>
+                                <small class="text-muted">{{ notif.created_at|timeago }}</small>
+                            </div>
+                        </a>
+                    {% elif notif.type == 'outbid' and auction_title %}
+                        {# Outbid notification - link to browse with search to find the auction #}
+                        <a href="{{ url_for('browse') }}?search={{ auction_title | urlencode }}" class="list-group-item list-group-item-action" style="cursor: pointer;">
+                            <div class="d-flex w-100 justify-content-between">
+                                <div>
+                                    <i class="bi bi-exclamation-circle text-warning"></i>
+                                    {{ notif.message }}
+                                </div>
+                                <small class="text-muted">{{ notif.created_at|timeago }}</small>
+                            </div>
+                        </a>
+                    {% else %}
+                        {# Default - no link #}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <div>
+                                    <i class="bi bi-{{ 'exclamation-circle text-warning' if notif.type == 'outbid' else 'trophy text-success' if notif.type == 'won' else 'info-circle text-info' }}"></i>
+                                    {{ notif.message }}
+                                </div>
+                                <small class="text-muted">{{ notif.created_at|timeago }}</small>
+                            </div>
                         </div>
-                    </div>
+                    {% endif %}
                     {% endfor %}
                 </div>
                 {% else %}
