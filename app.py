@@ -92,11 +92,13 @@ def contact():
 def index():
     """Home page showing featured auctions"""
     auctions = db_manager.get_active_auctions(limit=6)
+    # Get random auctions for hero slider (5 slides)
+    slider_auctions = db_manager.get_active_auctions(limit=5, random_order=True)
     if current_user.is_authenticated:
         notifications = db_manager.get_user_notifications(current_user.id, unread_only=True)
     else:
         notifications = []
-    return render_template('index.html', auctions=auctions, notifications=notifications)
+    return render_template('index.html', auctions=auctions, slider_auctions=slider_auctions, notifications=notifications)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():

@@ -26,6 +26,72 @@
     </div>
 </div>
 
+<!-- Hero Image Slider -->
+{% if slider_auctions and slider_auctions|length > 0 %}
+<div class="hero-slider-container mb-5">
+    <div class="hero-slider">
+        {% for auction in slider_auctions %}
+        <div class="hero-slide {% if loop.first %}active{% endif %}" data-slide="{{ loop.index0 }}">
+            <div class="slide-content">
+                <!-- Left: Full-height image -->
+                <div class="slide-image">
+                    <img src="{{ url_for('static', filename='uploads/' + auction.image_path) }}"
+                         alt="{{ auction.title }}"
+                         onerror="this.src='https://via.placeholder.com/800x600?text=Artwork'">
+                </div>
+
+                <!-- Right: Artwork info -->
+                <div class="slide-info">
+                    <div class="slide-info-content">
+                        <span class="slide-category">{{ auction.category_name or 'Art' }}</span>
+                        <h2 class="slide-title">{{ auction.title }}</h2>
+                        <p class="slide-description">{{ auction.description[:200] }}{% if auction.description|length > 200 %}...{% endif %}</p>
+
+                        <div class="slide-meta">
+                            <div class="meta-item">
+                                <i class="bi bi-cash"></i>
+                                <div>
+                                    <small>Current Bid</small>
+                                    <strong>{{ auction.current_bid|currency }}</strong>
+                                </div>
+                            </div>
+                            <div class="meta-item">
+                                <i class="bi bi-clock"></i>
+                                <div>
+                                    <small>Time Left</small>
+                                    <strong>{{ auction.end_time|countdown }}</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <a href="{{ url_for('auction_detail', auction_id=auction.auction_id) }}"
+                           class="btn btn-primary btn-lg discover-btn">
+                            <i class="bi bi-compass"></i> Discover Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Navigation arrows -->
+    <button class="slider-arrow slider-arrow-left" onclick="moveSlide(-1)">
+        <i class="bi bi-chevron-left"></i>
+    </button>
+    <button class="slider-arrow slider-arrow-right" onclick="moveSlide(1)">
+        <i class="bi bi-chevron-right"></i>
+    </button>
+
+    <!-- Navigation dots -->
+    <div class="slider-dots">
+        {% for auction in slider_auctions %}
+        <span class="dot {% if loop.first %}active{% endif %}" onclick="currentSlide({{ loop.index0 }})"></span>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
 <!-- Featured Auctions -->
 <div class="section-header mb-4">
     <h2 class="h3" style="color: var(--primary-color);">
@@ -146,6 +212,7 @@
 </div>
 
 <style>
+/* Category Cards */
 .category-card {
     transition: all 0.3s;
     cursor: pointer;
@@ -156,5 +223,351 @@
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     background: var(--accent-color);
 }
+
+/* Hero Slider Styles */
+.hero-slider-container {
+    position: relative;
+    width: 100%;
+    height: 500px;
+    overflow: hidden;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.hero-slider {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.hero-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.6s ease-in-out;
+    z-index: 1;
+}
+
+.hero-slide.active {
+    opacity: 1;
+    z-index: 2;
+}
+
+.slide-content {
+    display: flex;
+    height: 100%;
+}
+
+/* Left: Image */
+.slide-image {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+.slide-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+}
+
+.hero-slide.active .slide-image img {
+    animation: zoomIn 0.8s ease-out;
+}
+
+@keyframes zoomIn {
+    from {
+        transform: scale(1.1);
+    }
+    to {
+        transform: scale(1);
+    }
+}
+
+/* Right: Info */
+.slide-info {
+    flex: 1;
+    background: linear-gradient(135deg, rgba(126,59,33,0.95), rgba(217,157,118,0.95));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    color: white;
+}
+
+.slide-info-content {
+    max-width: 500px;
+    animation: slideInRight 0.8s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.slide-category {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+}
+
+.slide-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+    color: white;
+}
+
+.slide-description {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.slide-meta {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.meta-item i {
+    font-size: 1.8rem;
+    opacity: 0.8;
+}
+
+.meta-item small {
+    display: block;
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+.meta-item strong {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.discover-btn {
+    background: white;
+    color: var(--primary-color);
+    border: none;
+    padding: 0.8rem 2rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.discover-btn:hover {
+    background: var(--accent-color);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* Navigation Arrows */
+.slider-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.9);
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.3s ease;
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+.slider-arrow:hover {
+    background: white;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.slider-arrow-left {
+    left: 20px;
+}
+
+.slider-arrow-right {
+    right: 20px;
+}
+
+/* Navigation Dots */
+.slider-dots {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.5);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dot.active {
+    background: rgba(255,255,255,0.95);
+    width: 30px;
+    border-radius: 6px;
+}
+
+.dot:hover {
+    background: rgba(255,255,255,0.8);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-slider-container {
+        height: 600px;
+    }
+
+    .slide-content {
+        flex-direction: column;
+    }
+
+    .slide-image,
+    .slide-info {
+        flex: none;
+        height: 50%;
+    }
+
+    .slide-info {
+        padding: 2rem;
+    }
+
+    .slide-title {
+        font-size: 1.8rem;
+    }
+
+    .slide-meta {
+        gap: 1rem;
+    }
+
+    .slider-arrow {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+
+    .slider-arrow-left {
+        left: 10px;
+    }
+
+    .slider-arrow-right {
+        right: 10px;
+    }
+}
 </style>
+
+<script>
+let currentSlideIndex = 0;
+let slideInterval;
+
+function showSlide(index) {
+    const slides = document.querySelectorAll('.hero-slide');
+    const dots = document.querySelectorAll('.dot');
+
+    if (slides.length === 0) return;
+
+    // Wrap around
+    if (index >= slides.length) {
+        currentSlideIndex = 0;
+    } else if (index < 0) {
+        currentSlideIndex = slides.length - 1;
+    } else {
+        currentSlideIndex = index;
+    }
+
+    // Remove active class from all slides and dots
+    slides.forEach(slide => slide.classList.remove('active'));
+    dots.forEach(dot => dot.classList.remove('active'));
+
+    // Add active class to current slide and dot
+    slides[currentSlideIndex].classList.add('active');
+    dots[currentSlideIndex].classList.add('active');
+}
+
+function moveSlide(direction) {
+    showSlide(currentSlideIndex + direction);
+    resetSlideInterval();
+}
+
+function currentSlide(index) {
+    showSlide(index);
+    resetSlideInterval();
+}
+
+function autoSlide() {
+    moveSlide(1);
+}
+
+function resetSlideInterval() {
+    clearInterval(slideInterval);
+    slideInterval = setInterval(autoSlide, 5000); // Change slide every 5 seconds
+}
+
+// Initialize slider
+document.addEventListener('DOMContentLoaded', function() {
+    if (document.querySelector('.hero-slider')) {
+        showSlide(0);
+        slideInterval = setInterval(autoSlide, 5000);
+
+        // Pause on hover
+        const sliderContainer = document.querySelector('.hero-slider-container');
+        if (sliderContainer) {
+            sliderContainer.addEventListener('mouseenter', () => clearInterval(slideInterval));
+            sliderContainer.addEventListener('mouseleave', () => {
+                slideInterval = setInterval(autoSlide, 5000);
+            });
+        }
+    }
+});
+
+// Keyboard navigation
+document.addEventListener('keydown', function(e) {
+    if (document.querySelector('.hero-slider')) {
+        if (e.key === 'ArrowLeft') {
+            moveSlide(-1);
+        } else if (e.key === 'ArrowRight') {
+            moveSlide(1);
+        }
+    }
+});
+</script>
 {% endblock %}
