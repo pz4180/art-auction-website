@@ -108,116 +108,58 @@
     <!-- Auctions Grid -->
     <div class="col-lg-9">
         <!-- Results Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h4>Browse Auctions</h4>
-                {% if search_term %}
-                <p class="text-muted mb-0">Search results for "<strong>{{ search_term }}</strong>"</p>
-                {% endif %}
-            </div>
-            <div>
-                <div class="btn-group view-toggle" role="group">
-                    <button type="button" class="btn btn-outline-secondary active" id="gridViewBtn" onclick="setView('grid')">
-                        <i class="bi bi-grid-3x3-gap"></i>
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary" id="listViewBtn" onclick="setView('list')">
-                        <i class="bi bi-list-ul"></i>
-                    </button>
-                </div>
-            </div>
+        <div class="mb-4">
+            <h4>Browse Auctions</h4>
+            {% if search_term %}
+            <p class="text-muted mb-0">Search results for "<strong>{{ search_term }}</strong>"</p>
+            {% endif %}
         </div>
         
         {% if auctions %}
-        <!-- Auctions Container -->
-        <div id="auctionsContainer" class="grid-view">
-            <!-- Grid View -->
-            <div class="row" id="auctionsGrid">
-                {% for auction in auctions %}
-                <div class="col-lg-4 col-md-6 mb-4 auction-item">
-                    <div class="card auction-card h-100" onclick="window.location.href='{{ url_for('auction_detail', auction_id=auction.auction_id) }}'">
-                        {% if auction.bid_count and auction.bid_count > 5 %}
-                        <span class="badge">Popular</span>
-                        {% endif %}
-
-                        <div style="height: 200px; overflow: hidden;">
-                            <img src="{{ url_for('static', filename='uploads/' + auction.image_path) }}"
-                                 class="card-img-top"
-                                 alt="{{ auction.title }}"
-                                 onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
-                        </div>
-
-                        <div class="card-body">
-                            <h6 class="card-title text-truncate">{{ auction.title }}</h6>
-                            <p class="text-muted small mb-2">
-                                <i class="bi bi-person"></i> {{ auction.seller_name }}
-                                {% if auction.category_name %}
-                                | <i class="bi bi-tag"></i> {{ auction.category_name }}
-                                {% endif %}
-                            </p>
-
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <div>
-                                    <small class="text-muted">Current Bid</small>
-                                    <div class="h6 mb-0" style="color: var(--primary-color);">
-                                        {{ auction.current_bid|currency }}
-                                    </div>
-                                </div>
-                                <div class="text-end">
-                                    <small class="text-muted">{{ auction.bid_count or 0 }} bid(s)</small>
-                                </div>
-                            </div>
-
-                            <div class="time-remaining">
-                                <i class="bi bi-clock"></i> {{ auction.end_time|countdown }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-
-            <!-- List View -->
-            <div id="auctionsList" style="display: none;">
-                {% for auction in auctions %}
-                <div class="auction-item" onclick="window.location.href='{{ url_for('auction_detail', auction_id=auction.auction_id) }}'">
+        <!-- Auctions Grid -->
+        <div class="row">
+            {% for auction in auctions %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card auction-card h-100" onclick="window.location.href='{{ url_for('auction_detail', auction_id=auction.auction_id) }}'">
                     {% if auction.bid_count and auction.bid_count > 5 %}
                     <span class="badge">Popular</span>
                     {% endif %}
 
-                    <div class="auction-image">
+                    <div style="height: 200px; overflow: hidden;">
                         <img src="{{ url_for('static', filename='uploads/' + auction.image_path) }}"
+                             class="card-img-top"
                              alt="{{ auction.title }}"
                              onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
                     </div>
 
-                    <div class="auction-content">
-                        <div class="auction-header">
-                            <h5>{{ auction.title }}</h5>
-                            <div class="auction-meta">
-                                <i class="bi bi-person"></i> {{ auction.seller_name }}
-                                {% if auction.category_name %}
-                                | <i class="bi bi-tag"></i> {{ auction.category_name }}
-                                {% endif %}
+                    <div class="card-body">
+                        <h6 class="card-title text-truncate">{{ auction.title }}</h6>
+                        <p class="text-muted small mb-2">
+                            <i class="bi bi-person"></i> {{ auction.seller_name }}
+                            {% if auction.category_name %}
+                            | <i class="bi bi-tag"></i> {{ auction.category_name }}
+                            {% endif %}
+                        </p>
+
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <small class="text-muted">Current Bid</small>
+                                <div class="h6 mb-0" style="color: var(--primary-color);">
+                                    {{ auction.current_bid|currency }}
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted">{{ auction.bid_count or 0 }} bid(s)</small>
                             </div>
                         </div>
 
-                        <div class="auction-details">
-                            <div class="auction-pricing">
-                                <small class="text-muted">Current Bid</small>
-                                <div class="current-bid">{{ auction.current_bid|currency }}</div>
-                                <div class="bid-count">{{ auction.bid_count or 0 }} bid(s)</div>
-                            </div>
-
-                            <div class="auction-timing">
-                                <div class="time-remaining">
-                                    <i class="bi bi-clock"></i> {{ auction.end_time|countdown }}
-                                </div>
-                            </div>
+                        <div class="time-remaining">
+                            <i class="bi bi-clock"></i> {{ auction.end_time|countdown }}
                         </div>
                     </div>
                 </div>
-                {% endfor %}
             </div>
+            {% endfor %}
         </div>
         
         <!-- Pagination -->
@@ -265,46 +207,4 @@
     </div>
 </div>
 
-<script>
-function setView(view) {
-    const container = document.getElementById('auctionsContainer');
-    const gridView = document.getElementById('auctionsGrid');
-    const listView = document.getElementById('auctionsList');
-    const gridBtn = document.getElementById('gridViewBtn');
-    const listBtn = document.getElementById('listViewBtn');
-
-    if (view === 'grid') {
-        // Show grid view, hide list view
-        container.className = 'grid-view';
-        gridView.style.display = 'flex';
-        gridView.style.display = '';  // Reset to default (flex from row class)
-        listView.style.display = 'none';
-
-        // Update button states
-        gridBtn.classList.add('active');
-        listBtn.classList.remove('active');
-
-        // Save preference to localStorage
-        localStorage.setItem('auctionView', 'grid');
-    } else if (view === 'list') {
-        // Show list view, hide grid view
-        container.className = 'list-view';
-        gridView.style.display = 'none';
-        listView.style.display = 'block';
-
-        // Update button states
-        listBtn.classList.add('active');
-        gridBtn.classList.remove('active');
-
-        // Save preference to localStorage
-        localStorage.setItem('auctionView', 'list');
-    }
-}
-
-// Load saved view preference on page load
-document.addEventListener('DOMContentLoaded', function() {
-    const savedView = localStorage.getItem('auctionView') || 'grid';
-    setView(savedView);
-});
-</script>
 {% endblock %}
