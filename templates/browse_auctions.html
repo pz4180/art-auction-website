@@ -108,42 +108,30 @@
     <!-- Auctions Grid -->
     <div class="col-lg-9">
         <!-- Results Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h4>Browse Auctions</h4>
-                {% if search_term %}
-                <p class="text-muted mb-0">Search results for "<strong>{{ search_term }}</strong>"</p>
-                {% endif %}
-            </div>
-            <div>
-                <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-outline-secondary active" onclick="setView('grid')">
-                        <i class="bi bi-grid-3x3-gap"></i>
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary" onclick="setView('list')">
-                        <i class="bi bi-list-ul"></i>
-                    </button>
-                </div>
-            </div>
+        <div class="mb-4">
+            <h4>Browse Auctions</h4>
+            {% if search_term %}
+            <p class="text-muted mb-0">Search results for "<strong>{{ search_term }}</strong>"</p>
+            {% endif %}
         </div>
         
         {% if auctions %}
         <!-- Auctions Grid -->
-        <div class="row" id="auctionsGrid">
+        <div class="row">
             {% for auction in auctions %}
             <div class="col-lg-4 col-md-6 mb-4">
                 <div class="card auction-card h-100" onclick="window.location.href='{{ url_for('auction_detail', auction_id=auction.auction_id) }}'">
                     {% if auction.bid_count and auction.bid_count > 5 %}
                     <span class="badge">Popular</span>
                     {% endif %}
-                    
+
                     <div style="height: 200px; overflow: hidden;">
-                        <img src="{{ url_for('static', filename='uploads/' + auction.image_path) }}" 
-                             class="card-img-top" 
+                        <img src="{{ url_for('static', filename='uploads/' + auction.image_path) }}"
+                             class="card-img-top"
                              alt="{{ auction.title }}"
                              onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
                     </div>
-                    
+
                     <div class="card-body">
                         <h6 class="card-title text-truncate">{{ auction.title }}</h6>
                         <p class="text-muted small mb-2">
@@ -152,7 +140,7 @@
                             | <i class="bi bi-tag"></i> {{ auction.category_name }}
                             {% endif %}
                         </p>
-                        
+
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <div>
                                 <small class="text-muted">Current Bid</small>
@@ -164,7 +152,7 @@
                                 <small class="text-muted">{{ auction.bid_count or 0 }} bid(s)</small>
                             </div>
                         </div>
-                        
+
                         <div class="time-remaining">
                             <i class="bi bi-clock"></i> {{ auction.end_time|countdown }}
                         </div>
@@ -219,12 +207,4 @@
     </div>
 </div>
 
-<script>
-function setView(view) {
-    // This would toggle between grid and list view
-    // Implementation depends on your preference
-    console.log('Switching to ' + view + ' view');
-}
-
-</script>
 {% endblock %}
