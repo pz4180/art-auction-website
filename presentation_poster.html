@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MuseBid - Art Auction Platform Presentation Poster</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            padding: 20px;
+        }
+
+        .poster {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.2);
+            border: 15px solid #7E3B21;
+        }
+
+        /* Header Section */
+        .header {
+            background: linear-gradient(135deg, #7E3B21 0%, #D99D76 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            border-bottom: 5px solid #EBCCA0;
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            letter-spacing: 2px;
+        }
+
+        .header .subtitle {
+            font-size: 1.8em;
+            font-style: italic;
+            opacity: 0.95;
+        }
+
+        /* Main Content */
+        .content {
+            padding: 40px;
+        }
+
+        /* Section Styling */
+        .section {
+            margin-bottom: 35px;
+            page-break-inside: avoid;
+        }
+
+        .section-title {
+            background: linear-gradient(90deg, #7E3B21 0%, #D99D76 100%);
+            color: white;
+            padding: 12px 20px;
+            font-size: 1.6em;
+            margin-bottom: 15px;
+            border-left: 8px solid #EBCCA0;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .section-content {
+            padding: 15px;
+            line-height: 1.8;
+        }
+
+        /* Two Column Layout */
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .column {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #D99D76;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin-left: 25px;
+            margin-top: 10px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        li strong {
+            color: #7E3B21;
+        }
+
+        /* Website Preview */
+        .website-preview {
+            text-align: center;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 10px;
+            border: 3px solid #D99D76;
+            margin: 20px 0;
+        }
+
+        .website-preview img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .website-preview-placeholder {
+            background: linear-gradient(135deg, #7E3B21 0%, #D99D76 100%);
+            color: white;
+            padding: 100px 20px;
+            border-radius: 8px;
+            font-size: 1.5em;
+            text-align: center;
+        }
+
+        /* Technologies Grid */
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .tech-item {
+            background: linear-gradient(135deg, #7E3B21 0%, #D99D76 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Functions List */
+        .functions-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .function-card {
+            background: #f9f9f9;
+            padding: 15px;
+            border-left: 5px solid #7E3B21;
+            border-radius: 5px;
+        }
+
+        .function-card h4 {
+            color: #7E3B21;
+            margin-bottom: 8px;
+            font-size: 1.2em;
+        }
+
+        /* Footer Section */
+        .footer {
+            background: linear-gradient(135deg, #7E3B21 0%, #D99D76 100%);
+            color: white;
+            padding: 30px 40px;
+            margin-top: 30px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .footer h3 {
+            color: #EBCCA0;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        .footer p {
+            line-height: 1.6;
+        }
+
+        /* Student Info Box */
+        .student-info {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #EBCCA0;
+        }
+
+        .student-info p {
+            margin-bottom: 8px;
+        }
+
+        /* Abstract Box */
+        .abstract-box {
+            background: #f9f9f9;
+            padding: 25px;
+            border-left: 8px solid #7E3B21;
+            border-radius: 5px;
+            font-size: 1.05em;
+            line-height: 1.9;
+            text-align: justify;
+        }
+
+        /* Objectives Box */
+        .objectives-box {
+            background: linear-gradient(135deg, rgba(126,59,33,0.1), rgba(217,157,118,0.1));
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #D99D76;
+        }
+
+        .objectives-box ol {
+            margin-top: 10px;
+        }
+
+        /* Requirements Section */
+        .requirements-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .requirement-box {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            border-top: 4px solid #7E3B21;
+        }
+
+        .requirement-box h3 {
+            color: #7E3B21;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .poster {
+                box-shadow: none;
+                max-width: 100%;
+            }
+
+            .section {
+                page-break-inside: avoid;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .two-columns,
+            .footer-grid,
+            .functions-list,
+            .requirements-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .header .subtitle {
+                font-size: 1.2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="poster">
+        <!-- Header -->
+        <div class="header">
+            <h1>MuseBid</h1>
+            <div class="subtitle">Web-Based Art Auction Platform</div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Website Preview -->
+            <div class="section">
+                <h2 class="section-title">Website Main Page</h2>
+                <div class="website-preview">
+                    <!-- Replace this div with actual screenshot -->
+                    <div class="website-preview-placeholder">
+                        [Insert Website Screenshot Here]<br>
+                        <small style="font-size: 0.7em; opacity: 0.8;">
+                            Take a screenshot of your homepage and replace this placeholder
+                        </small>
+                    </div>
+                    <!-- Or use an actual image: -->
+                    <!-- <img src="static/images/homepage_screenshot.png" alt="MuseBid Homepage"> -->
+                </div>
+            </div>
+
+            <!-- Abstract -->
+            <div class="section">
+                <h2 class="section-title">Abstract</h2>
+                <div class="abstract-box">
+                    Traditionally, the art world has been dependent on physical galleries and face-to-face auctions, which are expensive, inaccessible and limited to certain places. Lots of art lovers, students, and emerging artists do not have the opportunity to access such a platform because of geographical and economic reasons. The aim of this project is to create a web-based artwork auction system combining both auction services and the interactive interface that would facilitate the accessibility of art trading and appreciation. The system will enable registered users to view works of art, register on timed auctions and monitor their bidding progress in real time. In addition, the platform will provide supporting features such as user registration, bidding and selling arts, and a simple notification system. From the computing perspective, this project combines concepts from database management, web technologies, system analysis and design, and UX design. Its application fields are e-commerce simulation, digital marketplace, and online community platforms. The users targeted are artists or sellers (where one uploads the artwork to be auctioned), buyers or collectors (where one browses and places a bid). The final product will provide a platform that allows users access to art auctions, builds an online art community, and creates an engaging, interactive, and accessible online environment.
+                </div>
+            </div>
+
+            <!-- Project Objectives -->
+            <div class="section">
+                <h2 class="section-title">Project Objectives</h2>
+                <div class="objectives-box">
+                    <ol>
+                        <li><strong>To study</strong> existing art auction platforms and digital marketplaces and identify key features and limitations.</li>
+                        <li><strong>To design and develop</strong> an online art auction website with the necessary modules such as user registration, artwork upload, auction creation, and bidding system.</li>
+                        <li><strong>To test and evaluate</strong> the proposed system in terms of functionality and usability to ensure its effectiveness.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- System Functions -->
+            <div class="section">
+                <h2 class="section-title">System Functions</h2>
+                <div class="functions-list">
+                    <div class="function-card">
+                        <h4>1. User Registration</h4>
+                        <p>Users can create an account with their username, email address, and password. Registered users can log in to their account and take actions like creating auctions or placing bids.</p>
+                    </div>
+                    <div class="function-card">
+                        <h4>2. Upload Artwork & Create Auction</h4>
+                        <p>Users can upload artwork by providing details such as artwork title, description, image, and starting bid price. The system will generate an auction record.</p>
+                    </div>
+                    <div class="function-card">
+                        <h4>3. Auction Browsing & Search</h4>
+                        <p>Users can view available artworks to auction. The system provides basic search and filter options (e.g., category, or price range).</p>
+                    </div>
+                    <div class="function-card">
+                        <h4>4. Bidding System</h4>
+                        <p>Users may make bids on auctions that are currently ongoing. The system automatically changes the existing highest bid and reminds users when outbid.</p>
+                    </div>
+                    <div class="function-card">
+                        <h4>5. Auction Results & History</h4>
+                        <p>Users can view the results of completed auctions, including the winning bid and bidder details. They can also access their personal bidding history.</p>
+                    </div>
+                    <div class="function-card">
+                        <h4>6. Notifications & Alerts</h4>
+                        <p>The system notifies users of important updates, such as being outbid, winning an auction, or when a new auction is created.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Requirements -->
+            <div class="section">
+                <h2 class="section-title">System Requirements</h2>
+                <div class="requirements-grid">
+                    <!-- Functional Requirements -->
+                    <div class="requirement-box">
+                        <h3>Functional Requirements</h3>
+                        <ol>
+                            <li><strong>User Registration</strong> – Users create accounts using email and password, with data stored securely in MySQL.</li>
+                            <li><strong>Art Upload and Auction Creation</strong> – Registered sellers upload artwork with details such as title, description, starting bid, and auction duration.</li>
+                            <li><strong>Auction Browsing and Search</strong> – Buyers browse auctions and filter by category, price range, or artist.</li>
+                            <li><strong>Bidding System</strong> – Users place real-time bids, with automatic updates of the current highest bid.</li>
+                            <li><strong>Auction Results and History</strong> – Users can review past auctions, winning bids, and personal bidding history.</li>
+                            <li><strong>Notifications and Alerts</strong> – Alerts are sent when a user is outbid, wins an auction, or when a new auction begins.</li>
+                        </ol>
+                    </div>
+
+                    <!-- Non-Functional Requirements -->
+                    <div class="requirement-box">
+                        <h3>Non-Functional Requirements</h3>
+                        <ol>
+                            <li><strong>Performance</strong> – The system must handle concurrent bidding with real-time updates.</li>
+                            <li><strong>Security</strong> – Use HTTPS to protect website and user data.</li>
+                            <li><strong>Scalability</strong> – The architecture must support an increasing number of users and auctions.</li>
+                            <li><strong>Usability</strong> – Interfaces must be intuitive and responsive across devices.</li>
+                            <li><strong>Maintainability</strong> – The codebase should follow modular design for easy updates and debugging.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tools & Technologies -->
+            <div class="section">
+                <h2 class="section-title">Tools & Technologies Used</h2>
+                <div class="tech-grid">
+                    <div class="tech-item">Python Flask</div>
+                    <div class="tech-item">MySQL Database</div>
+                    <div class="tech-item">HTML5 & CSS3</div>
+                    <div class="tech-item">JavaScript</div>
+                    <div class="tech-item">Bootstrap 5</div>
+                    <div class="tech-item">Flask-Login</div>
+                    <div class="tech-item">Werkzeug</div>
+                    <div class="tech-item">Pillow (Image Processing)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-grid">
+                <!-- Student Information -->
+                <div>
+                    <h3>Student Information</h3>
+                    <div class="student-info">
+                        <p><strong>Name:</strong> [Your Full Name]</p>
+                        <p><strong>Student ID:</strong> [Your Student ID]</p>
+                        <p><strong>Email:</strong> [your.email@university.edu]</p>
+                        <p><strong>Program:</strong> [Your Program/Major]</p>
+                        <p><strong>Institution:</strong> [Your University Name]</p>
+                        <p><strong>Academic Year:</strong> [2024/2025]</p>
+                    </div>
+                </div>
+
+                <!-- Acknowledgement -->
+                <div>
+                    <h3>Acknowledgement</h3>
+                    <p>
+                        I would like to express my sincere gratitude to my supervisor and course instructor for their valuable guidance and support throughout this project.
+                        Special thanks to my peers for their feedback and suggestions during the development process.
+                        I am also grateful to the open-source community for providing excellent tools and frameworks that made this project possible.
+                        This project has been an invaluable learning experience in web development, database management, and user experience design.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Print functionality
+        window.addEventListener('keypress', function(e) {
+            if (e.ctrlKey && e.key === 'p') {
+                window.print();
+            }
+        });
+    </script>
+</body>
+</html>
