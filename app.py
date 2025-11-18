@@ -550,13 +550,13 @@ def browse_auctions():
     min_price = request.args.get('min_price', type=float)
     max_price = request.args.get('max_price', type=float)
     search_term = request.args.get('search', '')
-    sort = request.args.get('sort', 'ending_soon')  
+    sort = request.args.get('sort', 'ending_soon')
     page = request.args.get('page', 1, type=int)
-    
+
     # Pagination
     per_page = 12
     offset = (page - 1) * per_page
-    
+
     sort_by = None
     order = "ASC"
 
@@ -587,10 +587,13 @@ def browse_auctions():
         sort_by=sort_by,
         order=order
     )
-    
+
     # Get categories for filter
     categories = db_manager.get_categories()
-    
+
+    # Get auction stats for quick stats section
+    auction_stats = db_manager.get_auction_stats()
+
     return render_template(
         'browse_auctions.html',
         auctions=auctions,
@@ -600,7 +603,8 @@ def browse_auctions():
         min_price=min_price,
         max_price=max_price,
         page=page,
-        sort=sort  # ✅ Pass it back to template
+        sort=sort,
+        auction_stats=auction_stats
     )
 
 @app.route('/auction/<int:auction_id>')
