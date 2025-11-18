@@ -587,3 +587,46 @@ body {
     display: block;
     margin: 0 auto;     /* centers the image itself */
 }
+
+/* Pagination Styles */
+.pagination {
+    margin-top: 2rem;
+}
+
+.pagination .page-link {
+    color: var(--dark-color);
+    background-color: var(--white);
+    border: 2px solid var(--accent-color);
+    border-radius: 8px;
+    margin: 0 4px;
+    padding: 8px 16px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.pagination .page-link:hover {
+    color: var(--black);
+    background-color: var(--accent-color);
+    border-color: var(--neutral-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.pagination .page-item.active .page-link {
+    color: var(--white);
+    background: linear-gradient(135deg, var(--neutral-color), var(--support-color));
+    border-color: var(--support-color);
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(132, 129, 84, 0.3);
+}
+
+.pagination .page-item.active .page-link:hover {
+    transform: none;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: var(--gray);
+    background-color: var(--light-color);
+    border-color: var(--accent-color);
+    cursor: not-allowed;
+}
