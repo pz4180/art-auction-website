@@ -1,5 +1,3 @@
--- Add Wallet System to Art Auction Database
-
 USE art_auction_db;
 
 -- Add wallet_balance column to users table

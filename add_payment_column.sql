@@ -1,6 +1,3 @@
--- Add payment_status column to auctions table if it doesn't exist
--- Run this script to update your database for payment functionality
-
 USE art_auction_db;
 
 -- Add payment_status column (will skip if already exists)

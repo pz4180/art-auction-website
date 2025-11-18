@@ -285,11 +285,6 @@ MAIL_PASSWORD = 'your_app_password'
 - Bulk upload functionality
 - Advanced search with AI recommendations
 
-## Support
-
-For issues or questions about the implementation, please refer to the inline code comments or create an issue in your project repository.
-https://www.nga.gov/artworks/74796-japanese-footbridge
-
 
 git
 git add .

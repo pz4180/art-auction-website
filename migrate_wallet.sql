@@ -1,5 +1,4 @@
 -- Simple Wallet Migration Script
--- Run this from MySQL command line or MySQL Workbench
 
 USE art_auction_db;
 

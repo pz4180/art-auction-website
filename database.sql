@@ -1,5 +1,4 @@
 -- Art Auction Website Database Schema
--- Run this SQL script in MySQL to create the database and tables
 
 CREATE DATABASE IF NOT EXISTS art_auction_db;
 USE art_auction_db;

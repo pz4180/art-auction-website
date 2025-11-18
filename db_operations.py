@@ -996,5 +996,55 @@ class DatabaseManager:
                 cursor.close()
                 conn.close()
 
+    def get_auction_stats(self):
+        """Get quick stats for browse page"""
+        conn = self.get_connection()
+        if not conn:
+            return {'total_active': 0, 'ending_today': 0, 'new_this_week': 0}
+
+        try:
+            cursor = conn.cursor(dictionary=True)
+            stats = {}
+
+            # Total active auctions
+            cursor.execute("""
+                SELECT COUNT(*) as count
+                FROM auctions
+                WHERE status = 'active' AND end_time > NOW()
+            """)
+            result = cursor.fetchone()
+            stats['total_active'] = result['count'] if result else 0
+
+            # Auctions ending today
+            cursor.execute("""
+                SELECT COUNT(*) as count
+                FROM auctions
+                WHERE status = 'active'
+                AND DATE(end_time) = CURDATE()
+                AND end_time > NOW()
+            """)
+            result = cursor.fetchone()
+            stats['ending_today'] = result['count'] if result else 0
+
+            # New auctions this week
+            cursor.execute("""
+                SELECT COUNT(*) as count
+                FROM auctions
+                WHERE status = 'active'
+                AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+            """)
+            result = cursor.fetchone()
+            stats['new_this_week'] = result['count'] if result else 0
+
+            return stats
+
+        except Error as e:
+            print(f"Error getting auction stats: {e}")
+            return {'total_active': 0, 'ending_today': 0, 'new_this_week': 0}
+        finally:
+            if conn.is_connected():
+                cursor.close()
+                conn.close()
+
 # Create a singleton instance
 db_manager = DatabaseManager()
