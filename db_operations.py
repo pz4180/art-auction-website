@@ -604,8 +604,8 @@ class DatabaseManager:
                 # Calculate the original duration in days
                 original_duration = (current_end_time - created_at).days
 
-                # Only update end_time if duration has changed
-                if duration_days != original_duration:
+                # Only update end_time if duration_days is provided AND has changed
+                if duration_days is not None and duration_days != original_duration:
                     # Recalculate end_time from now
                     end_time = datetime.now() + timedelta(days=duration_days)
                     cur.execute("""
