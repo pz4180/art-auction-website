@@ -265,9 +265,9 @@ def edit_auction(auction_id):
 
     categories = db_manager.get_categories()
 
-    # Calculate current duration for the form
+    # Calculate current duration for the form using total_seconds to avoid rounding errors
     if auction['end_time'] and auction['created_at']:
-        current_duration = (auction['end_time'] - auction['created_at']).days
+        current_duration = round((auction['end_time'] - auction['created_at']).total_seconds() / 86400)
     else:
         current_duration = 7  # default
 

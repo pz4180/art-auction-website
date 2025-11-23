@@ -601,13 +601,14 @@ class DatabaseManager:
             if current:
                 current_end_time = current[0]
                 created_at = current[1]
-                # Calculate the original duration in days
-                original_duration = (current_end_time - created_at).days
+                # Calculate the original duration in days using total_seconds to avoid rounding errors
+                # Round to nearest integer to properly compare with user-selected duration
+                original_duration = round((current_end_time - created_at).total_seconds() / 86400)
 
                 # Only update end_time if duration has changed
                 if duration_days != original_duration:
-                    # Recalculate end_time from now
-                    end_time = datetime.now() + timedelta(days=duration_days)
+                    # Recalculate end_time from created_at (not from now) to maintain consistency
+                    end_time = created_at + timedelta(days=duration_days)
                     cur.execute("""
                         UPDATE auctions
                         SET title=%s, description=%s, category_id=%s, end_time=%s
